@@ -1,0 +1,31 @@
+app:
+  name: article
+http:
+  mode: debug
+  port: 8002
+  host: 127.0.0.1
+database:
+  mysql:
+    url: root:123456@tcp(127.0.0.1:3306)/blog?charset=utf8mb4&parseTime=True&loc=Local
+    debug: true
+redis:
+  url: 127.0.0.1:6379
+  maxIdle: 20
+  maxActive: 256
+  idleTimeout: 15
+  timeout: 30
+  network: tcp
+  password: ""
+log:
+  filename: /tmp/article.log
+  maxSize: 500
+  maxBackups: 3
+  maxAge: 3
+  level: "debug"
+  stdout: true
+jaeger:
+  type: "const"
+  param: 1
+  logSpans: true
+  localAgentHostPort: "localhost:6831"
+  service: "article"

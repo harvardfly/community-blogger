@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package bloguser;
+
+//protoc --go_out=plugins=grpc:. user.proto
+
+// FindByTokenRequest 通过Token获取用户信息
+message FindByTokenRequest {
+  string token = 1;
+}
+
+// FindByIDRequest 方法请求结构体
+message FindByIDRequest {
+  int32 id = 1;
+}
+
+// UserResponse 方法返回结构体
+message UserResponse {
+  int32 id = 1;
+  string token = 2;
+  string username = 3;
+  string password = 4;
+}
+
+// User RPC服务
+service User {
+  rpc FindByToken (FindByTokenRequest) returns (UserResponse) {
+  }
+
+  rpc FindById (FindByIDRequest) returns (UserResponse) {
+  }
+}

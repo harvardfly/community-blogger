@@ -1,0 +1,21 @@
+app:
+  name: userrpc
+grpc:
+  mode: debug
+  port: 8003
+  host: 127.0.0.1
+  schema: bbs
+  etcdAddr: localhost:2379
+  serviceName: zpf.userrpc
+  ttl: 5
+database:
+  mysql:
+    url: root:123456@tcp(127.0.0.1:3306)/blog?charset=utf8mb4&parseTime=True&loc=Local
+    debug: true
+log:
+  filename: /tmp/userrpc.log
+  maxSize: 500
+  maxBackups: 3
+  maxAge: 3
+  level: "debug"
+  stdout: true

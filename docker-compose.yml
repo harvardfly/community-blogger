@@ -1,0 +1,73 @@
+version: "3.5"
+
+networks:
+  sync:
+    driver: overlay
+
+configs:
+  blog_home:
+    external:
+      name: blog_web_home_1
+  blog_article:
+    external:
+      name: blog_web_article_2
+
+services:
+  blog-home:
+    environment:
+      MYSQL_DSN: "root:123456@tcp(db:3306)/blog?charset=utf8mb4&parseTime=True&loc=Local"
+    restart: always
+    depends_on:
+      - db
+    image: hub.xxx.com/community-blogger:latest
+    ports:
+      - 18001:8001
+    configs:
+      - source: blog_home
+        target: /service/configs/home.yaml
+    networks:
+      - sync
+    volumes:
+      - "/opt/gopath/src/community-blogger"
+    command: /service/home -f /service/configs/home.yaml
+
+  blog-article:
+    environment:
+      MYSQL_DSN: "root:123456@tcp(db:3306)/blog?charset=utf8mb4&parseTime=True&loc=Local"
+    restart: always
+    depends_on:
+      - db
+      - redis
+    image: hub.xxx.com/community-blogger:latest
+    ports:
+      - 18002:8002
+    configs:
+      - source: blog_article
+        target: /service/configs/article.yaml
+    networks:
+      - sync
+    volumes:
+      - "/opt/gopath/src/community-blogger"
+    command: /service/article -f /service/configs/article.yaml
+
+  db:
+    image: hub.xxx.com/mysql/mysql:latest
+    networks:
+      - sync
+    volumes:
+      - "/var/lib/mysql"
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: blog
+    ports:
+      - 53306:3306
+    restart: always
+
+  redis:
+    image: hub.xxx.com/library/redis:stable
+    volumes:
+      - /var/lib/redis
+    deploy:
+      placement:
+        constraints:
+          - node.labels.name == xxx-web-test-1
