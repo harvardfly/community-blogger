@@ -14,7 +14,7 @@ func CreateInitControllersFn(pc *ArticleController) http.InitControllers {
 		r.Use(auth.ValidAccessToken) // JWT Token认证
 		r.Use(auth.Next())           // 允许跨域
 		e := r.Group("api/v1")
-		e.POST("/article", middleware.Limiter, pc.Article)   // 发表文章
+		e.POST("/article", middleware.BucketLimit, pc.Article)   // 发表文章
 		e.GET("/article", pc.ArticleInfo)                    // 获取文章详情
 		e.GET("/article/topN", pc.ArticleTopN)               // 获取TOPN的文章
 		e.PUT("/article", pc.ArticleEdit)                    // 更新文章  全量更新

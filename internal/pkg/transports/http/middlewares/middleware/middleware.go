@@ -1,23 +1,13 @@
 package middleware
 
 import (
+	"community-blogger/internal/pkg/redis"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	redisPool "github.com/gomodule/redigo/redis"
-	"log"
 	"net/http"
 	"time"
-	"community-blogger/internal/pkg/database"
-	"community-blogger/internal/pkg/models"
-	"community-blogger/internal/pkg/redis"
 )
-
-var Routers = map[string]map[string]string{
-	"post_article": {
-		"method": "POST",
-		"path":   "/api/v1/article",
-	},
-}
 
 // Limiter 限流中间件 用于同一用户发表文章频率限制 避免恶意刷文章
 func Limiter(ctx *gin.Context) {
@@ -61,58 +51,49 @@ func Limiter(ctx *gin.Context) {
 	}
 }
 
-// AccumulatePoints 积分中间件 用于同一用户发表文章增加积分的规则
-func AccumulatePoints(ctx *gin.Context) {
-	method := ctx.Request.Method   // POST
-	path := ctx.Request.RequestURI // /api/v1/article
-	action := fmt.Sprintf("%s-%s", method, path)
-	ctx.Next()
+// BucketLimit redis实现令牌桶限流
+func BucketLimit(ctx *gin.Context) {
 	username, exists := ctx.Get("username")
 	if !exists {
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": "username获取失败"})
 	}
-	key := fmt.Sprintf(redis.KeyArticlePostPoints, username, action)
+	key := fmt.Sprintf(redis.KeyBucketLimitArticleUser, username)
 	c, err := redis.Client.RedisCon.Dial()
 	if err != nil || c == nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"message": "redis连接失败"})
 		return
 	}
-	points, _ := redisPool.Int64(c.Do("GET", key))
-	switch action {
-	case fmt.Sprintf("%s-%s", Routers["method"], Routers["path"]):
-		//限制20次
-		var limit int64 = 20
-		expire := time.Second * 60 * 60 * 24
-		if points >= limit {
-			// 今日没有积分奖励了
-			ctx.AbortWithStatusJSON(http.StatusTooManyRequests, gin.H{
-				"status":  http.StatusTooManyRequests,
-				"message": "too many request",
-			})
-			return
-		}
-		points, err = redisPool.Int64(c.Do("INCRBY", key, 1))
-		if err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"message": "redis操作ZADD失败"})
-		}
-		_, err = c.Do("EXPIRE", key, expire)
-		if err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"message": "redis操作EXPIRE失败"})
-		}
-	}
-	// 积分对应等级
-	level := PointToLevel(points)
-	fmt.Println(level)
-	// 积分、等级入库更新
-	go func() {
-		err = database.DBClient.Mysql.Model(&models.Integral{}).Create(&models.Integral{}).Error
-		if err != nil {
-			log.Fatal()
-			return
-		}
-	}()
-}
 
-func PointToLevel(point int64) string {
-	return ""
+	rate := 1                                                       // 令牌生成速度 每秒1个token
+	capacity := 1                                                   // 桶容量
+	tokens, err := redisPool.Int(c.Do("hget", key, "tokens"))       // 桶中的令牌数
+	lastTime, err := redisPool.Int64(c.Do("hget", key, "lastTime")) // 上次令牌生成时间
+	now := time.Now().Unix()
+
+	// 初始状态下 令牌数量为桶的容量
+	existKey, err := redisPool.Int(c.Do("exists", key))
+	if existKey != 1 {
+		tokens = capacity
+		c.Do("hset", key, "lastTime", now)
+	}
+	deltaTokens := int(now-lastTime) * rate // 经过一段时间后生成的令牌
+	if deltaTokens > 1 {
+		tokens = tokens + deltaTokens // 增加令牌
+	}
+	if tokens > capacity {
+		tokens = capacity
+		lastTime = time.Now().Unix() // 记录令牌生成时间 秒为单位
+		c.Do("hset", key, "lastTime", lastTime)
+	}
+	if tokens >= 1 {
+		tokens -= 1 // 请求进来了，令牌就减少1
+		c.Do("hset", key, "tokens", tokens)
+		return
+	}
+
+	// 无空闲token可用时 429状态码限流提示
+	ctx.AbortWithStatusJSON(http.StatusTooManyRequests, gin.H{
+		"status":  http.StatusTooManyRequests,
+		"message": "too many request",
+	})
 }
