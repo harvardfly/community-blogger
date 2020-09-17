@@ -6,12 +6,13 @@ gin+grpc+wire的博客系统
 1. web架构：gin+gorm+redis
 2. 数据库：mysql
 3. logger日志zap  日志切割lumberjack
-4. 依赖注入wire
+4. 依赖注入wire --> 解决大量配置文件初始化问题
 5. grpc(用户模块 调用rpc服务根据用户ID获取用户信息)
 6. JWT认证
-7. 基于redis实现分布式限流中间件（分别实现漏桶和令牌桶算法） 可用于防止用户恶意发布文章
-8. etcd作为服务注册发现
-9. opentracing+jaeger+ElasticSearch分布式链路追踪日志存储
+7. 基于redis实现分布式限流中间件（分别实现漏桶和令牌桶算法） 可用于防止用户恶意发布文章  --> 分布式限流 服务保护
+8. etcd作为服务注册发现  --> 服务注册发现  负载均衡
+9. opentracing+jaeger+ElasticSearch分布式链路追踪日志存储  --> 复杂调用链路问题排查
+10. prometheus 监控服务指标  分析gc等问题
 ```
 ## 功能模块
 ```$xslt
