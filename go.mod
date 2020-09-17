@@ -26,6 +26,7 @@ require (
 	github.com/mattn/go-isatty v0.0.12 // indirect
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pkg/errors v0.9.1
+	github.com/prometheus/client_golang v0.9.3
 	github.com/satori/go.uuid v1.2.0
 	github.com/spf13/cobra v1.0.0 // indirect
 	github.com/spf13/viper v1.7.0
