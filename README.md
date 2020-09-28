@@ -1,5 +1,5 @@
 # community-blogger
-gin+grpc+wire的博客系统
+gin+grpc+wire的脚手架，集成MySQL、Redis、ES、Kafka、分布式限流、服务注册发现、jaeger链路追踪、prometheus及支付宝支付API，可作为中型互联网公司golang架构实践
 
 ## 技术选型
 ```$xslt
@@ -13,19 +13,22 @@ gin+grpc+wire的博客系统
 8. etcd作为服务注册发现  --> 服务注册发现  负载均衡
 9. opentracing+jaeger+ElasticSearch分布式链路追踪日志存储  --> 复杂调用链路问题排查
 10. prometheus 监控服务指标  分析gc等问题
+11. kafka作为消息中间件 解耦应用 --> kafka高吞吐率将极大改善大流量下服务器压力
+12. ES作为日志存储和搜索服务 --> 发挥ES倒排索引优势，可用于文章的搜索
 ```
-## 功能模块
+## 功能模块 以博客系统作为脚手架示例
 ```$xslt
 各模块单独抽出一个service 采用微服务架构分布式部署
 考虑到首页访问流量过大的问题，将home单独抽成一个服务，方便后续负载均衡扩展
 1. home(首页模块)
 2. article(文章模块)
    文章模块有article和category
-3. redis实现文章浏览次数和热点文章排行榜(zset+goroutine实现 提高并发效率)
-4. userRPC(用户RPC服务模块 grpc实现)
-5. userAPI模块 调用userRPC获取用户信息
-6. 认证中间件采用JWT
-7. 单元测试(主要针对repositories数据库操作的测试)
+3. user模块 
+    userRPC(用户RPC服务模块 grpc实现)
+    userAPI模块 调用userRPC获取用户信息
+4. redis实现文章浏览次数和热点文章排行榜(zset+goroutine实现 提高并发效率)
+5. 认证中间件采用JWT
+6. 单元测试(主要针对repositories数据库操作的测试)
 ```
 
 ## 项目部署方式
