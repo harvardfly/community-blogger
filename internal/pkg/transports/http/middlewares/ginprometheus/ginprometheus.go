@@ -15,6 +15,7 @@ const (
 )
 
 var (
+	// httpHistogram prometheus 模型
 	httpHistogram = prometheus.NewHistogramVec(prometheus.HistogramOpts{
 		Namespace:   "http_server",
 		Subsystem:   "",
@@ -25,14 +26,17 @@ var (
 	}, []string{"method", "code", "uri"})
 )
 
+// init 初始化prometheus模型
 func init() {
 	prometheus.MustRegister(httpHistogram)
 }
 
+// handlerPath 定义采样路由struct
 type handlerPath struct {
 	sync.Map
 }
 
+// get 获取path
 func (hp *handlerPath) get(handler string) string {
 	v, ok := hp.Load(handler)
 	if !ok {
@@ -41,10 +45,12 @@ func (hp *handlerPath) get(handler string) string {
 	return v.(string)
 }
 
+// set 保存path到sync.Map
 func (hp *handlerPath) set(ri gin.RouteInfo) {
 	hp.Store(ri.Handler, ri.Path)
 }
 
+// GinPrometheus gin调用Prometheus的struct
 type GinPrometheus struct {
 	engine  *gin.Engine
 	ignored map[string]bool
@@ -84,6 +90,7 @@ func New(e *gin.Engine, options ...Option) *GinPrometheus {
 	return gp
 }
 
+// updatePath 更新path
 func (gp *GinPrometheus) updatePath() {
 	gp.updated = true
 	for _, ri := range gp.engine.Routes() {
