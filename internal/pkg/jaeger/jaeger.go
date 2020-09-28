@@ -37,7 +37,7 @@ func NewOptions(v *viper.Viper, logger *zap.Logger) (*Options, error) {
 		o   = new(Options)
 	)
 	if err = v.UnmarshalKey("jaeger", o); err != nil {
-		return nil, errors.Wrap(err, "unmarshal redis option error")
+		return nil, errors.Wrap(err, "unmarshal es option error")
 	}
 
 	logger.Info("load jaeger options success", zap.Any("jaeger options", o))

@@ -1,0 +1,53 @@
+PUT article
+{
+  "mappings": {
+    "properties": {
+      "category": {
+        "properties": {
+          "created_at": {
+            "type": "date"
+          },
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "keyword"
+          },
+          "num": {
+            "type": "integer"
+          },
+          "updated_at": {
+            "type": "date"
+          }
+        }
+      },
+      "created_at": {
+        "type": "date"
+      },
+      "id": {
+        "type": "integer"
+      },
+      "summary": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "title": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "updated_at": {
+        "type": "date"
+      }
+    }
+  }
+}
