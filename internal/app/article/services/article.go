@@ -1,10 +1,16 @@
 package services
 
 import (
+	"community-blogger/internal/app/article/repositories"
+	"community-blogger/internal/pkg/models"
+	"community-blogger/internal/pkg/redis"
+	"community-blogger/internal/pkg/requests"
+	"community-blogger/internal/pkg/responses"
 	"context"
 	"fmt"
 	redisPool "github.com/gomodule/redigo/redis"
 	"github.com/jinzhu/gorm"
+	"github.com/olivere/elastic/v7"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/log"
 	"github.com/pkg/errors"
@@ -13,11 +19,6 @@ import (
 	"sort"
 	"strconv"
 	"time"
-	"community-blogger/internal/app/article/repositories"
-	"community-blogger/internal/pkg/models"
-	"community-blogger/internal/pkg/redis"
-	"community-blogger/internal/pkg/requests"
-	"community-blogger/internal/pkg/responses"
 )
 
 // ArticleService 定义article service
@@ -38,6 +39,7 @@ type DefaultArticleService struct {
 	pool       *redisPool.Pool
 	trace      opentracing.Tracer
 	Repository repositories.ArticleRepository
+	esConn     *elastic.Client
 }
 
 // NewArticleService 初始化ArticleService
@@ -47,6 +49,7 @@ func NewArticleService(
 	pool *redisPool.Pool,
 	trace opentracing.Tracer,
 	repository repositories.ArticleRepository,
+	esConn *elastic.Client,
 ) ArticleService {
 	return &DefaultArticleService{
 		logger:     logger.With(zap.String("type", "DefaultArticleService")),
@@ -54,6 +57,7 @@ func NewArticleService(
 		pool:       pool,
 		trace:      trace,
 		Repository: repository,
+		esConn:     esConn,
 	}
 }
 

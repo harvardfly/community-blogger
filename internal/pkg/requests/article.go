@@ -1,5 +1,10 @@
 package requests
 
+import (
+	"community-blogger/internal/pkg/responses"
+	"time"
+)
+
 // Article request 数据结构
 type Article struct {
 	CategoryID int    `form:"category_id" json:"category_id"`
@@ -29,4 +34,14 @@ type ArticleEdit struct {
 type ArticleCategoryEdit struct {
 	ID         int `form:"id" json:"id"`
 	CategoryID int `form:"category_id" json:"category_id"`
+}
+
+// ArticleES request 数据结构
+type ArticleES struct {
+	ID        int                `json:"id"`
+	Summary   string             `json:"summary"`
+	Title     string             `json:"title"`
+	Category  responses.Category `json:"category"`
+	CreatedAt time.Time          `json:"created_at"`
+	UpdatedAt time.Time          `json:"updated_at"`
 }

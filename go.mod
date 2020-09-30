@@ -4,6 +4,7 @@ go 1.13
 
 require (
 	cloud.google.com/go/bigquery v1.4.0 // indirect
+	github.com/Shopify/sarama v1.27.0
 	github.com/codahale/hdrhistogram v0.0.0-20161010025455-3a0bb77429bd // indirect
 	github.com/coreos/etcd v3.3.25+incompatible
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
@@ -46,7 +47,6 @@ require (
 	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/go-playground/validator.v8 v8.18.2
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
-	gopkg.in/yaml.v2 v2.2.8
 	gotest.tools v2.2.0+incompatible
 	honnef.co/go/tools v0.0.1-2020.1.4 // indirect
 	rsc.io/quote/v3 v3.1.0 // indirect

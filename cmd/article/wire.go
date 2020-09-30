@@ -3,6 +3,8 @@
 package main
 
 import (
+	"community-blogger/internal/pkg/es"
+	"community-blogger/internal/pkg/kafka"
 	"github.com/google/wire"
 	"community-blogger/internal/app/article"
 	"community-blogger/internal/app/article/controllers"
@@ -23,6 +25,8 @@ var providerSet = wire.NewSet(
 	database.ProviderSet,
 	redis.ProviderSet,
 	jaeger.ProviderSet,
+	es.ProviderSet,
+	kafka.ProviderSet,
 	repositories.ProviderSet,
 	services.ProviderSet,
 	http.ProviderSet,

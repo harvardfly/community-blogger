@@ -1,6 +1,7 @@
 package main
 
 import (
+	"community-blogger/internal/pkg/kafka"
 	"flag"
 )
 
@@ -15,5 +16,7 @@ func main() {
 	if err := app.Start(); err != nil {
 		panic(err)
 	}
+	// kafka consumer
+	go kafka.Client.Subscribe()
 	app.AwaitSignal()
 }

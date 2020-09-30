@@ -1,13 +1,12 @@
 package etcdservice
 
 import (
+	"community-blogger/internal/pkg/utils/constutil"
 	"context"
 	"go.etcd.io/etcd/clientv3"
-	"github.com/etcd-io/etcd/mvcc"
 	"log"
 	"strings"
 	"time"
-	"community-blogger/internal/pkg/utils/constutil"
 )
 
 // Register 注册地址到ETCD组件中 使用 ; 分割

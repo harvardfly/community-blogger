@@ -6,7 +6,6 @@
 package main
 
 import (
-	"github.com/google/wire"
 	"community-blogger/internal/app/article"
 	"community-blogger/internal/app/article/controllers"
 	"community-blogger/internal/app/article/repositories"
@@ -14,10 +13,13 @@ import (
 	"community-blogger/internal/pkg/app"
 	"community-blogger/internal/pkg/config"
 	"community-blogger/internal/pkg/database"
+	"community-blogger/internal/pkg/es"
 	"community-blogger/internal/pkg/jaeger"
+	"community-blogger/internal/pkg/kafka"
 	"community-blogger/internal/pkg/log"
 	"community-blogger/internal/pkg/redis"
 	"community-blogger/internal/pkg/transports/http"
+	"github.com/google/wire"
 )
 
 // Injectors from wire.go:
@@ -67,8 +69,24 @@ func CreateApp(cf string) (*app.Application, error) {
 	if err != nil {
 		return nil, err
 	}
-	articleRepository := repositories.NewMysqlArticleRepository(logger, databaseDatabase)
-	articleService := services.NewArticleService(logger, viper, pool, tracer, articleRepository)
+	kafkaOptions, err := kafka.NewOptions(viper, logger)
+	if err != nil {
+		return nil, err
+	}
+	syncProducer, err := kafka.New(kafkaOptions)
+	if err != nil {
+		return nil, err
+	}
+	articleRepository := repositories.NewMysqlArticleRepository(logger, databaseDatabase, syncProducer)
+	esOptions, err := es.NewOptions(viper, logger)
+	if err != nil {
+		return nil, err
+	}
+	client, err := es.New(esOptions, logger)
+	if err != nil {
+		return nil, err
+	}
+	articleService := services.NewArticleService(logger, viper, pool, tracer, articleRepository, client)
 	articleController := controllers.NewArticleController(logger, articleService)
 	initControllers := controllers.CreateInitControllersFn(articleController)
 	engine := http.NewRouter(httpOptions, logger, initControllers)
@@ -85,4 +103,4 @@ func CreateApp(cf string) (*app.Application, error) {
 
 // wire.go:
 
-var providerSet = wire.NewSet(log.ProviderSet, config.ProviderSet, database.ProviderSet, redis.ProviderSet, jaeger.ProviderSet, repositories.ProviderSet, services.ProviderSet, http.ProviderSet, article.ProviderSet, controllers.ProviderSet)
+var providerSet = wire.NewSet(log.ProviderSet, config.ProviderSet, database.ProviderSet, redis.ProviderSet, jaeger.ProviderSet, es.ProviderSet, kafka.ProviderSet, repositories.ProviderSet, services.ProviderSet, http.ProviderSet, article.ProviderSet, controllers.ProviderSet)

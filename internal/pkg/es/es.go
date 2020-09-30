@@ -19,33 +19,37 @@ var (
 	Config Options    // 配置信息
 )
 
+// ClientType es 连接信息struct
 type ClientType struct {
 	esConn *elastic.Client
+	logger *zap.Logger
 }
 
 // Options ES配置
 type Options struct {
-	Host        string        `yaml:"host"`
-	Port        int           `yaml:"port"`
+	URL         string        `yaml:"url"`
 	HealthCheck time.Duration `yaml:"healthCheck"`
 	Sniff       bool          `yaml:"sniff"`
 	Gzip        bool          `yaml:"gzip"`
 	Timeout     string        `yaml:"timeout"`
 }
 
-//定义常用的聚合用的一些参数
+// Aggregations 定义常用的聚合用的一些参数
 type Aggregations struct {
 	AvgMetric AvgMetric `json:"AVG_Metric"`
 }
 
+// AvgMetric 平均值 聚合
 type AvgMetric struct {
 	Buckets []Metric `json:"buckets"`
 }
 
+// Metric 聚合
 type Metric struct {
 	AvgTime Value `json:"avg_time"`
 }
 
+// Value 聚合值
 type Value struct {
 	Value float64 `json:"value"`
 }
@@ -65,10 +69,9 @@ func NewOptions(v *viper.Viper, logger *zap.Logger) (*Options, error) {
 }
 
 // New 初始化ES连接信息
-func New(o *Options) (esConn *elastic.Client, err error) {
-	url := fmt.Sprintf("%s:%d", o.Host, o.Port)
+func New(o *Options, logger *zap.Logger) (esConn *elastic.Client, err error) {
 	esConn, err = elastic.NewClient(
-		elastic.SetURL(url),
+		elastic.SetURL(o.URL),
 		elastic.SetSniff(o.Sniff),
 		elastic.SetHealthcheckInterval(o.HealthCheck*time.Second),
 		elastic.SetGzip(o.Gzip),
@@ -76,28 +79,36 @@ func New(o *Options) (esConn *elastic.Client, err error) {
 		elastic.SetInfoLog(log.New(os.Stdout, "", log.LstdFlags)),
 	)
 	if err != nil {
-		panic(err)
+		logger.Error("es NewClient create error", zap.Error(err))
+		return
 	}
-	info, code, err := esConn.Ping(url).Do(context.Background())
+	info, code, err := esConn.Ping(o.URL).Do(context.Background())
 	if err != nil {
-		panic(err)
+		logger.Error("Ping esConn error", zap.Error(err))
+		return
 	}
 
-	fmt.Printf("Elasticsearch returned with code %d and version %s\n", code, info.Version.Number)
+	logger.Info("ES returned with code and version",
+		zap.Any("code", code),
+		zap.Any("version", info.Version.Number),
+	)
 
-	esVersion, err := esConn.ElasticsearchVersion(url)
+	esVersion, err := esConn.ElasticsearchVersion(o.URL)
 	if err != nil {
-		panic(err)
+		logger.Error("esConn search Version error", zap.Error(err))
+		return
 	}
-	fmt.Printf("Elasticsearch version %s\n", esVersion)
-	fmt.Println("conn es success", esConn)
+	logger.Info("conn es success",
+		zap.Any("esConn", esConn),
+		zap.Any("version", esVersion),
+	)
 	Client.esConn = esConn
 
 	return esConn, nil
 }
 
-// Create 创建
-func Create(Params map[string]string) (string, error) {
+// Insert 创建
+func (cli *ClientType) Insert(Params map[string]string) (string, error) {
 	var (
 		res *elastic.IndexResponse
 		err error
@@ -108,15 +119,14 @@ func Create(Params map[string]string) (string, error) {
 		Do(context.Background())
 
 	if err != nil {
-		fmt.Printf("create error %s\n", err)
-		panic(err)
+		cli.logger.Error("insert error", zap.Error(err))
+		return "", err
 	}
-	return res.Result, err
-
+	return res.Result, nil
 }
 
 // Delete 删除
-func Delete(Params map[string]string) (string, error) {
+func (cli *ClientType) Delete(Params map[string]string) (string, error) {
 	var (
 		res *elastic.DeleteResponse
 		err error
@@ -127,16 +137,15 @@ func Delete(Params map[string]string) (string, error) {
 		Do(context.Background())
 
 	if err != nil {
-		println(err.Error())
+		cli.logger.Error("delete error", zap.Error(err))
 		return "", err
 	}
 
-	fmt.Printf("delete result %s\n", res.Result)
 	return res.Result, nil
 }
 
-// Update 修改
-func Update(Params map[string]string, Doc map[string]interface{}) string {
+// Update 更新
+func (cli *ClientType) Update(Params map[string]string, Doc map[string]interface{}) string {
 	var (
 		res *elastic.UpdateResponse
 		err error
@@ -148,16 +157,15 @@ func Update(Params map[string]string, Doc map[string]interface{}) string {
 		Do(context.Background())
 
 	if err != nil {
-		fmt.Printf("update error %s\n", err.Error())
+		cli.logger.Error("update error", zap.Error(err))
 		return ""
 	}
-	fmt.Printf("update success %s\n", res.Result)
 	return res.Result
 
 }
 
 // GetByID 通过ID查找
-func GetByID(Params map[string]string) *elastic.GetResult {
+func (cli *ClientType) GetByID(Params map[string]string) *elastic.GetResult {
 	var (
 		res *elastic.GetResult
 		err error
@@ -173,14 +181,15 @@ func GetByID(Params map[string]string) *elastic.GetResult {
 		Do(context.Background())
 
 	if err != nil {
-		panic(err)
+		cli.logger.Error("GetByID error", zap.Error(err))
+		return nil
 	}
 
 	return res
 }
 
 // Query 搜索
-func Query(Params map[string]string) *elastic.SearchResult {
+func (cli *ClientType) Query(Params map[string]string) *elastic.SearchResult {
 	var (
 		res *elastic.SearchResult
 		err error
@@ -195,17 +204,15 @@ func Query(Params map[string]string) *elastic.SearchResult {
 			Do(context.Background())
 	}
 	if err != nil {
-		println(err.Error())
+		cli.logger.Error("Query error", zap.Error(err))
+		return nil
 	}
 
-	//if res.Hits.TotalHits > 0 {
-	//	fmt.Printf("Found a total of %d Employee \n", res.Hits.TotalHits)
-	//}
 	return res
 }
 
 // List 分页列表
-func List(Params map[string]string) *elastic.SearchResult {
+func (cli *ClientType) List(Params map[string]string) *elastic.SearchResult {
 	var res *elastic.SearchResult
 	var err error
 	size, _ := strconv.Atoi(Params["size"])
@@ -217,10 +224,10 @@ func List(Params map[string]string) *elastic.SearchResult {
 	if Params["sort_type"] == "desc" {
 		sortType = false
 	}
-	//fmt.Printf(" sort info  %s,%s\n", Params["sort"],Params["sort_type"])
+
 	if size < 0 || page < 0 {
-		fmt.Printf("param error")
-		return res
+		cli.logger.Error("param error", zap.Error(err))
+		return nil
 	}
 	if len(Params["queryString"]) > 0 {
 		res, err = Client.esConn.Search(Params["index"]).
@@ -236,20 +243,20 @@ func List(Params map[string]string) *elastic.SearchResult {
 			Size(size).
 			From((page)*size).
 			Sort(Params["sort"], sortType).
-			//SortBy(elastic.NewFieldSort("add_time").UnmappedType("long").Desc(), elastic.NewScoreSort()).
 			Timeout(Config.Timeout).
 			Do(context.Background())
 	}
 
 	if err != nil {
-		println("func list error:" + err.Error())
+		cli.logger.Error("func list error", zap.Error(err))
+		return nil
 	}
 	return res
 
 }
 
 // Aggregation 聚合 平均
-func Aggregation(Params map[string]string) *elastic.SearchResult {
+func (cli *ClientType) Aggregation(Params map[string]string) *elastic.SearchResult {
 	var res *elastic.SearchResult
 	var err error
 
@@ -263,14 +270,13 @@ func Aggregation(Params map[string]string) *elastic.SearchResult {
 	res, err = Client.esConn.Search(Params["index"]).
 		Size(0).
 		Aggregation(Params["aggregation_name"], aggs).
-		//Sort(Params["sort"],sort_type).
 		Timeout(Config.Timeout).
 		Do(context.Background())
 
 	if err != nil {
-		println("func Aggregation error:" + err.Error())
+		cli.logger.Error("func Aggregation error", zap.Error(err))
+		return nil
 	}
-	println("func Aggregation here 297")
 
 	return res
 }

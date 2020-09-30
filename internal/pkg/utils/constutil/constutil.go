@@ -23,3 +23,8 @@ const (
 	// ETCD Schema
 	Schema string = "blog"
 )
+
+const (
+	// kafka topic
+	CreateArticle string = "first_topic"
+)

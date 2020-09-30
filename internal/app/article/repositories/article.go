@@ -2,9 +2,13 @@ package repositories
 
 import (
 	"community-blogger/internal/pkg/database"
+	"community-blogger/internal/pkg/kafka"
 	"community-blogger/internal/pkg/models"
 	"community-blogger/internal/pkg/requests"
+	"community-blogger/internal/pkg/responses"
+	"community-blogger/internal/pkg/utils/constutil"
 	"errors"
+	"github.com/Shopify/sarama"
 	"github.com/jinzhu/gorm"
 	"go.uber.org/zap"
 	"time"
@@ -24,15 +28,17 @@ type ArticleRepository interface {
 
 // MysqlArticleRepository 定义article repository 初始结构体
 type MysqlArticleRepository struct {
-	logger *zap.Logger
-	db     *gorm.DB
+	logger   *zap.Logger
+	db       *gorm.DB
+	producer sarama.SyncProducer
 }
 
 // NewMysqlArticleRepository 初始化数据库操作
-func NewMysqlArticleRepository(logger *zap.Logger, db *database.Database) ArticleRepository {
+func NewMysqlArticleRepository(logger *zap.Logger, db *database.Database, producer sarama.SyncProducer) ArticleRepository {
 	return &MysqlArticleRepository{
-		logger: logger.With(zap.String("type", "MysqlArticleRepository")),
-		db:     db.Mysql,
+		logger:   logger.With(zap.String("type", "MysqlArticleRepository")),
+		db:       db.Mysql,
+		producer: producer,
 	}
 }
 
@@ -66,6 +72,7 @@ func (r *MysqlArticleRepository) GetCategory(id int) models.Category {
 
 // Article 发布文章
 func (r *MysqlArticleRepository) Article(req *requests.Article) (models.Article, error) {
+	var category models.Category
 	value := models.Article{
 		Title:      req.Title,
 		Summary:    req.Summary,
@@ -77,6 +84,24 @@ func (r *MysqlArticleRepository) Article(req *requests.Article) (models.Article,
 	if err != nil {
 		return value, err
 	}
+	r.db.Model(&models.Category{}).Scopes(withID(value.CategoryID)).First(&category)
+	esValue := requests.ArticleES{
+		ID:      value.ID,
+		Summary: value.Summary,
+		Title:   value.Title,
+		Category: responses.Category{
+			ID:        value.CategoryID,
+			Name:      category.Name,
+			Num:       category.Num,
+			CreatedAt: category.CreatedAt,
+			UpdatedAt: category.UpdatedAt,
+		},
+		CreatedAt: value.CreatedAt,
+		UpdatedAt: value.UpdatedAt,
+	}
+	// 同步数据到kafka
+	result := kafka.Client.SyncProduce(constutil.CreateArticle, esValue)
+	r.logger.Info("sync kafka to es", zap.Any("result", result))
 
 	return value, err
 }

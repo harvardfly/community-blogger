@@ -6,13 +6,15 @@
 package controllers
 
 import (
-	"github.com/google/wire"
 	"community-blogger/internal/app/article/repositories"
 	"community-blogger/internal/app/article/services"
 	"community-blogger/internal/pkg/config"
+	"community-blogger/internal/pkg/es"
 	"community-blogger/internal/pkg/jaeger"
+	"community-blogger/internal/pkg/kafka"
 	"community-blogger/internal/pkg/log"
 	"community-blogger/internal/pkg/redis"
+	"github.com/google/wire"
 )
 
 // Injectors from wire.go:
@@ -46,11 +48,19 @@ func CreateArticleController(cf string, rpo repositories.ArticleRepository) (*Ar
 	if err != nil {
 		return nil, err
 	}
-	articleService := services.NewArticleService(logger, viper, pool, tracer, rpo)
+	esOptions, err := es.NewOptions(viper, logger)
+	if err != nil {
+		return nil, err
+	}
+	client, err := es.New(esOptions, logger)
+	if err != nil {
+		return nil, err
+	}
+	articleService := services.NewArticleService(logger, viper, pool, tracer, rpo, client)
 	articleController := NewArticleController(logger, articleService)
 	return articleController, nil
 }
 
 // wire.go:
 
-var testProviderSet = wire.NewSet(log.ProviderSet, config.ProviderSet, redis.ProviderSet, jaeger.ProviderSet, services.ProviderSet, ProviderSet)
+var testProviderSet = wire.NewSet(log.ProviderSet, config.ProviderSet, redis.ProviderSet, jaeger.ProviderSet, es.ProviderSet, kafka.ProviderSet, services.ProviderSet, ProviderSet)

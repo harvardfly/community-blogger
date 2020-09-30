@@ -45,7 +45,7 @@ func (pc *ArticleController) Article(c *gin.Context) {
 	article, err := pc.service.Article(ctx, &req)
 	if err != nil {
 		pc.logger.Error("发表文章失败", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, httputil.Error(nil, "发表主题失败"))
+		c.JSON(http.StatusInternalServerError, httputil.Error(nil, "发表文章失败"))
 		return
 	}
 	span.LogFields(

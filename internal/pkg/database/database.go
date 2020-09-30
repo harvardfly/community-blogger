@@ -1,6 +1,7 @@
 package database
 
 import (
+	"community-blogger/internal/pkg/models"
 	"github.com/google/wire"
 	"github.com/jinzhu/gorm"
 	// mysql driver
@@ -9,7 +10,6 @@ import (
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 	"time"
-	"community-blogger/internal/pkg/models"
 )
 
 // Options database option
