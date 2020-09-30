@@ -20,7 +20,7 @@ type ServerOptions struct {
 	Schema      string
 	EtcdAddr    string
 	ServiceName string
-	Ttl         int64
+	TTL         int64
 }
 
 // NewServerOptions grpc new option
@@ -83,7 +83,7 @@ func (s *Server) Start() error {
 	s.logger.Info("grpc server starting ...", zap.String("addr", addr))
 
 	//将服务地址注册到etcd中
-	go etcdservice.Register(s.o.EtcdAddr, s.o.ServiceName, addr, s.o.Ttl)
+	go etcdservice.Register(s.o.EtcdAddr, s.o.ServiceName, addr, s.o.TTL)
 
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGTERM, syscall.SIGINT, syscall.SIGKILL, syscall.SIGHUP, syscall.SIGQUIT)

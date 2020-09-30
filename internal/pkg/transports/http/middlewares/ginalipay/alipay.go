@@ -14,6 +14,7 @@ import (
 	"time"
 )
 
+// AliPay 支付宝支付 struct
 type AliPay struct {
 	appId           string
 	apiDomain       string
@@ -24,6 +25,7 @@ type AliPay struct {
 	SignType        string
 }
 
+// NewAliPay 初始化AliPay
 func NewAliPay(appId string, publicKey, privateKey []byte, isProduction bool) (client *AliPay) {
 	client = &AliPay{
 		appId:           appId,
@@ -31,17 +33,18 @@ func NewAliPay(appId string, publicKey, privateKey []byte, isProduction bool) (c
 		publicKey:       publicKey,
 		AliPayPublicKey: publicKey,
 		client:          http.DefaultClient,
-		SignType:        SIGN_TYPE_RSA2,
+		SignType:        SignTypeRsa2,
 	}
 
-	apiDomain := ALI_PAY_SANDBOX_API_URL
+	apiDomain := AliPaySandboxApiUrl
 	if isProduction {
-		apiDomain = ALI_PAY_PRODUCTION_API_URL
+		apiDomain = AliPayProductionApiUrl
 	}
 	client.apiDomain = apiDomain
 	return client
 }
 
+// URLValues 支付链接信息
 func (a *AliPay) URLValues(param TradeParams) (value url.Values, err error) {
 	var p = url.Values{}
 	p.Add("app_id", a.appId)
@@ -49,7 +52,7 @@ func (a *AliPay) URLValues(param TradeParams) (value url.Values, err error) {
 	p.Add("format", FORMAT)
 	p.Add("charset", CHARSET)
 	p.Add("sign_type", a.SignType)
-	p.Add("timestamp", time.Now().Format(TIME_FORMAT))
+	p.Add("timestamp", time.Now().Format(TimeFormat))
 	p.Add("version", VERSION)
 
 	if len(param.BizContent()) > 0 {
@@ -71,7 +74,7 @@ func (a *AliPay) URLValues(param TradeParams) (value url.Values, err error) {
 	sort.Strings(keys)
 
 	var sign string
-	if a.SignType == SIGN_TYPE_RSA {
+	if a.SignType == SignTypeRsa {
 		sign, err = signRSA(keys, p, a.privateKey)
 	} else {
 		sign, err = signRSA2(keys, p, a.privateKey)
@@ -84,6 +87,7 @@ func (a *AliPay) URLValues(param TradeParams) (value url.Values, err error) {
 	return p, nil
 }
 
+// doRequestWithVerify 校验
 func (a *AliPay) doRequestWithVerify(method string, param TradeParams, results interface{}) error {
 	body, err := a.doRequest(method, param, results)
 	if err != nil {
@@ -91,7 +95,7 @@ func (a *AliPay) doRequestWithVerify(method string, param TradeParams, results i
 	}
 
 	if len(a.AliPayPublicKey) > 0 {
-		var rootNodeName = strings.Replace(param.Method(), ".", "_", -1) + RESPONSE_SUFFIX
+		var rootNodeName = strings.Replace(param.Method(), ".", "_", -1) + ResponseSuffix
 		content, sign := parseJSONSource(string(body), rootNodeName)
 		if ok, err := verifyResponseData([]byte(content), a.SignType, sign, a.AliPayPublicKey); ok == false {
 			return err
@@ -100,6 +104,7 @@ func (a *AliPay) doRequestWithVerify(method string, param TradeParams, results i
 	return nil
 }
 
+// doRequest 执行请求
 func (a *AliPay) doRequest(method string, param TradeParams, results interface{}) (body []byte, err error) {
 	var buf io.Reader
 	if param != nil {
@@ -141,6 +146,7 @@ func (a *AliPay) doRequest(method string, param TradeParams, results interface{}
 	return body, nil
 }
 
+// parseJSONSource 解析json
 func parseJSONSource(body, nodeName string) (content, sign string) {
 	body = strings.TrimPrefix(body, "{")
 	body = strings.TrimSuffix(body, "}")
@@ -171,6 +177,7 @@ func parseJSONSource(body, nodeName string) (content, sign string) {
 	return
 }
 
+// signRSA2 RSA2签名
 func signRSA2(keys []string, param url.Values, privateKey []byte) (s string, err error) {
 	if param == nil {
 		param = make(url.Values, 0)
@@ -193,6 +200,7 @@ func signRSA2(keys []string, param url.Values, privateKey []byte) (s string, err
 	return s, nil
 }
 
+// signRSA RSA签名
 func signRSA(keys []string, param url.Values, privateKey []byte) (s string, err error) {
 	if param == nil {
 		param = make(url.Values, 0)
@@ -215,6 +223,7 @@ func signRSA(keys []string, param url.Values, privateKey []byte) (s string, err 
 	return s, nil
 }
 
+// verifySign 校验签名
 func verifySign(req *http.Request, key []byte) (ok bool, err error) {
 	sign, err := base64.StdEncoding.DecodeString(req.Form.Get("sign"))
 	signType := req.Form.Get("sign_type")
@@ -243,7 +252,7 @@ func verifySign(req *http.Request, key []byte) (ok bool, err error) {
 	}
 	var s = strings.Join(pList, "&")
 
-	if signType == SIGN_TYPE_RSA {
+	if signType == SignTypeRsa {
 		err = VerifyPKCS1v15([]byte(s), sign, key, crypto.SHA1)
 	} else {
 		err = VerifyPKCS1v15([]byte(s), sign, key, crypto.SHA256)
@@ -255,13 +264,14 @@ func verifySign(req *http.Request, key []byte) (ok bool, err error) {
 	return true, nil
 }
 
+// verifyResponseData 校验返回数据
 func verifyResponseData(data []byte, signType, sign string, key []byte) (ok bool, err error) {
 	signBytes, err := base64.StdEncoding.DecodeString(sign)
 	if err != nil {
 		return false, err
 	}
 
-	if signType == SIGN_TYPE_RSA {
+	if signType == SignTypeRsa {
 		err = VerifyPKCS1v15(data, signBytes, key, crypto.SHA1)
 	} else {
 		err = VerifyPKCS1v15(data, signBytes, key, crypto.SHA256)

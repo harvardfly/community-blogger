@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 )
 
+// TradeParams trade参数
 type TradeParams interface {
 	// method
 	Method() string
@@ -13,10 +14,12 @@ type TradeParams interface {
 	BizContent() string
 }
 
+// OriginBodySetter OriginBody
 type OriginBodySetter interface {
 	SetOriginBody(body []byte)
 }
 
+// marshal 转换json串
 func marshal(obj interface{}) string {
 	var bytes, err = json.Marshal(obj)
 	if err != nil {

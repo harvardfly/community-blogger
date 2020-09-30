@@ -83,28 +83,28 @@ func New(o *Options) (producer sarama.SyncProducer, err error) {
 
 // AsyncProduce 生产者以异步的方式发送数据到kafka
 func (cli *ClientType) AsyncProduce(topic string, payload interface{}) {
-	payloadJson, err := json.Marshal(payload)
+	payloadJSON, err := json.Marshal(payload)
 	if err != nil {
 		cli.logger.Error("json.Marshal error", zap.Error(err))
 		return
 	}
 	asyncProducer.Input() <- &sarama.ProducerMessage{
 		Topic: topic,
-		Value: sarama.StringEncoder(payloadJson),
+		Value: sarama.StringEncoder(payloadJSON),
 	}
 }
 
 // SyncProduce 生产者以同步方式发送数据到kafka
 func (cli *ClientType) SyncProduce(topic string, payload interface{}) (result bool) {
 	key := uuid.NewV4().String()
-	payloadJson, err := json.Marshal(payload)
+	payloadJSON, err := json.Marshal(payload)
 	if err != nil {
 		cli.logger.Error("json.Marshal error", zap.Error(err))
 	}
 	msg := &sarama.ProducerMessage{
 		Topic: topic,
 		Key:   sarama.StringEncoder(key),
-		Value: sarama.StringEncoder(payloadJson),
+		Value: sarama.StringEncoder(payloadJSON),
 	}
 	//重试TryTimes次
 	for i := 0; i < cli.Settings.TryTimes; i++ {
@@ -120,7 +120,7 @@ func (cli *ClientType) SyncProduce(topic string, payload interface{}) (result bo
 	return
 }
 
-// subscribe 消费kafka数据到es
+// Subscribe 消费kafka数据到es
 func (cli *ClientType) Subscribe() {
 	config := sarama.NewConfig()
 	config.Consumer.Return.Errors = true

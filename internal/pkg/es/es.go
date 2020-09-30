@@ -15,8 +15,10 @@ import (
 )
 
 var (
-	Client ClientType //连接类型
-	Config Options    // 配置信息
+	// Client 连接类型
+	Client ClientType
+	// Config 配置信息
+	Config Options
 )
 
 // ClientType es 连接信息struct

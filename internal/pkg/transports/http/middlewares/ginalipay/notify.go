@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-// https://docs.open.alipay.com/203/105286
+// TradeNotification https://docs.open.alipay.com/203/105286
 type TradeNotification struct {
 	NotifyTime        string `json:"notify_time"`         // 通知时间,通知的发送时间。格式为yyyy-MM-dd HH:mm:ss
 	NotifyType        string `json:"notify_type"`         // 通知类型
@@ -43,21 +43,23 @@ type TradeNotification struct {
 	VoucherDetailList string `json:"voucher_detail_list"` // 优惠券信息
 }
 
+// GetTradeNotificationByBody 获取交易通知 body测试
 func (a *AliPay) GetTradeNotificationByBody(body string) (*TradeNotification, error) {
-	fakeUrl := "http://fake.alipay.notify/?" + body
+	fakeURL := "http://fake.alipay.notify/?" + body
 	method := http.MethodPost
-	_, err := http.ReadRequest(bufio.NewReader(strings.NewReader(method + " " + fakeUrl + " HTTP/1.0\r\n\r\n")))
+	_, err := http.ReadRequest(bufio.NewReader(strings.NewReader(method + " " + fakeURL + " HTTP/1.0\r\n\r\n")))
 	if err != nil {
 		return nil, err
 	}
 
-	req := httptest.NewRequest(http.MethodPost, fakeUrl, strings.NewReader(""))
+	req := httptest.NewRequest(http.MethodPost, fakeURL, strings.NewReader(""))
 	if req == nil {
 		return nil, errors.New("make server request failed")
 	}
 	return a.GetTradeNotification(req)
 }
 
+// GetTradeNotification 获取交易通知
 func (a *AliPay) GetTradeNotification(req *http.Request) (*TradeNotification, error) {
 	if req == nil {
 		return nil, errors.New("invalid req")

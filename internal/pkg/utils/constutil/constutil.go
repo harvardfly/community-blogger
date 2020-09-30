@@ -20,11 +20,11 @@ const (
 )
 
 const (
-	// ETCD Schema
+	// Schema ETCD的Schema
 	Schema string = "blog"
 )
 
 const (
-	// kafka topic
+	// CreateArticle kafka topic
 	CreateArticle string = "first_topic"
 )

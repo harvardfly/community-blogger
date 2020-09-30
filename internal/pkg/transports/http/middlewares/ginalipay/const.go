@@ -1,70 +1,70 @@
 package ginalipay
 
 const (
-	ALI_PAY_SANDBOX_API_URL    = "https://openapi.alipaydev.com/gateway.do"
-	ALI_PAY_PRODUCTION_API_URL = "https://openapi.alipay.com/gateway.do"
+	AliPaySandboxApiUrl    = "https://openapi.alipaydev.com/gateway.do"
+	AliPayProductionApiUrl = "https://openapi.alipay.com/gateway.do"
 )
 
 const (
-	TIME_FORMAT = "2006-01-02 15:04:05"
-	FORMAT      = "JSON"
-	CHARSET     = "utf-8"
-	VERSION     = "1.0"
+	TimeFormat = "2006-01-02 15:04:05"
+	FORMAT     = "JSON"
+	CHARSET    = "utf-8"
+	VERSION    = "1.0"
 )
 
 const (
-	RESPONSE_SUFFIX = "_response"
+	ResponseSuffix = "_response"
 )
 
 const (
-	SIGN_TYPE_RSA2 = "RSA2"
-	SIGN_TYPE_RSA  = "RSA"
+	SignTypeRsa2 = "RSA2"
+	SignTypeRsa  = "RSA"
 )
 
 type PayType int
 
 const (
-	PAY_TYPE_APP PayType = iota // 手机支付
-	Pay_TYPE_WAP                // 手机网站支付
+	PayTypeApp PayType = iota // 手机支付
+	PayTypeWap                // 手机网站支付
 )
 
 // 交易状态说明(trade_status)
 const (
-	TRADE_STATUS_WAIT_BUYER_PAY = "WAIT_BUYER_PAY" // 交易创建，等待买家付款
-	TRADE_STATUS_TRADE_CLOSED   = "TRADE_CLOSED"   // 未付款交易超时关闭，或支付完成后全额退款
-	TRADE_STATUS_TRADE_SUCCESS  = "TRADE_SUCCESS"  // 交易支付成功
-	TRADE_STATUS_TRADE_FINISHED = "TRADE_FINISHED" // 交易结束，不可退款
+	TradeStatusWaitBuyerPay  = "WAIT_BUYER_PAY" // 交易创建，等待买家付款
+	TradeStatusTradeClosed   = "TRADE_CLOSED"   // 未付款交易超时关闭，或支付完成后全额退款
+	TradeStatusTradeSuccess  = "TRADE_SUCCESS"  // 交易支付成功
+	TradeStatusTradeFinished = "TRADE_FINISHED" // 交易结束，不可退款
 )
 
-// 结算操作类型(operation_type)
+// 结算操作类型(OperationType)
 const (
-	OPERATION_TYPE_REPLENISH        = "replenish"
-	OPERATION_TYPE_REPLENISH_REFUND = "replenish_refund"
-	OPERATION_TYPE_TRANSFER         = "transfer"
-	OPERATION_TYPE_TRANSFER_REFUND  = "transfer_refund"
+	OperationTypeReplenish       = "replenish"
+	OperationTypeReplenishRefund = "replenish_refund"
+	OperationTypeTransfer        = "transfer"
+	OperationTypeTransferRefund  = "transfer_refund"
 )
 
 // 买家用户类型
 const (
-	BUYER_USER_TYPE_CORPORATE = "CORPORATE" // 企业用户
-	BUYER_USER_TYPE_PRIVATE   = "PRIVATE"   // 个人用户
+	BuyerUserTypeCorporate = "CORPORATE" // 企业用户
+	BuyerUserTypePrivate   = "PRIVATE"   // 个人用户
 )
 
 // 账单类型
 const (
-	BILL_TYPE_TRADE        = "trade"        // 指商户基于支付宝交易收单的业务账单
-	BILL_TYPE_SIGNCUSTOMER = "signcustomer" // 是指基于商户支付宝余额收入及支出等资金变动的帐务账单
+	BillTypeTrade        = "trade"        // 指商户基于支付宝交易收单的业务账单
+	BillTypeSignCustomer = "signcustomer" // 是指基于商户支付宝余额收入及支出等资金变动的帐务账单
 )
 
 // 分账类型
 const (
-	ROYALTY_TYPE_TRANSFER  = "transfer"  // 普通分账
-	ROYALTY_TYPE_REPLENISH = "replenish" // 补差
+	RoyaltyTypeTransfer  = "transfer"  // 普通分账
+	RoyaltyTypeReplenish = "replenish" // 补差
 )
 
 // 渠道所使用的资金类型
 const (
-	FUND_TYPE_DEBI_CARD   = "DEBIT_CARD"  // 借记卡
-	FUND_TYPE_CREDIT_CARD = "CREDIT_CARD" // 信用卡
-	FUND_YPE_MIXED_CARD   = "MIXED_CARD"  // 借贷合一卡
+	FundTypeDebiCard   = "DEBIT_CARD"  // 借记卡
+	FundTypeCreditCard = "CREDIT_CARD" // 信用卡
+	FundTypeMixedCard  = "MIXED_CARD"  // 借贷合一卡
 )
