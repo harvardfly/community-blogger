@@ -21,7 +21,7 @@ var syncProducerOnce sync.Once
 
 // ClientType 定义kafka client 结构体
 type ClientType struct {
-	Producer sarama.SyncProducer
+	Producer sarama.SyncProducer // 默认是生产者同步模式
 	Settings *Options
 	logger   *zap.Logger
 }
@@ -55,7 +55,7 @@ func NewOptions(v *viper.Viper, logger *zap.Logger) (*Options, error) {
 func New(o *Options) (producer sarama.SyncProducer, err error) {
 	config := sarama.NewConfig()
 	//等待服务器所有副本都保存成功后的响应
-	config.Producer.RequiredAcks = sarama.WaitForLocal
+	config.Producer.RequiredAcks = sarama.WaitForAll
 	//Hash向partition发送消息
 	config.Producer.Partitioner = sarama.NewHashPartitioner
 	//是否等待成功和失败后的响应,只有上面的RequireAcks设置不是NoResponse这里才有用.
