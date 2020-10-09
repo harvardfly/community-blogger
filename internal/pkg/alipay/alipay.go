@@ -1,4 +1,4 @@
-package ginalipay
+package alipay
 
 import (
 	"crypto"
@@ -36,9 +36,9 @@ func NewAliPay(appId string, publicKey, privateKey []byte, isProduction bool) (c
 		SignType:        SignTypeRsa2,
 	}
 
-	apiDomain := AliPaySandboxApiUrl
+	apiDomain := SandboxApiURL
 	if isProduction {
-		apiDomain = AliPayProductionApiUrl
+		apiDomain = ProductionApiURL
 	}
 	client.apiDomain = apiDomain
 	return client

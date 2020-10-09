@@ -1,4 +1,4 @@
-package ginalipay
+package alipay
 
 import (
 	"errors"

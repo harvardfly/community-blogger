@@ -1,4 +1,4 @@
-package ginalipay
+package alipay
 
 import (
 	"context"
@@ -133,6 +133,19 @@ func (a *AliPay) TradeWapPay(ctx context.Context, args *TradeWapPayRequest) (*Tr
 	}
 
 	return &TradeWapPayResponse{
+		TargetURL: a.apiDomain + "?" + p.Encode(),
+	}, nil
+}
+
+// 统一收单下单并支付页面接口
+// https://opendocs.alipay.com/apis/api_1/alipay.trade.page.pay
+func (a *AliPay) TradePagePay(ctx context.Context, args *TradePagePayRequest) (*TradePagePayResponse, error) {
+	p, err := a.URLValues(args)
+	if err != nil {
+		return nil, err
+	}
+
+	return &TradePagePayResponse{
 		TargetURL: a.apiDomain + "?" + p.Encode(),
 	}, nil
 }

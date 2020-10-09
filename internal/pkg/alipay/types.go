@@ -1,4 +1,4 @@
-package ginalipay
+package alipay
 
 import (
 	"time"
@@ -133,6 +133,52 @@ func (t *TradeWapPayRequest) BizContent() string {
 }
 
 type TradeWapPayResponse struct {
+	TargetURL string `json:"target_url"`
+}
+
+/* alipay.trade.page.pay
+ */
+type TradePagePayRequest struct {
+	TotalAmount string `json:"total_amount"` // 必选：订单总金额，单位为元，精确到小数点后两位，取值范围[0.01,100000000]
+	Subject     string `json:"subject"`      // 必选：商品的标题/交易标题/订单标题/订单关键字等。
+	OutTradeNo  string `json:"out_trade_no"` // 必选：商户网站唯一订单号
+	ProductCode string `json:"product_code"` // 必选：销售产品码，商家和支付宝签约的产品码
+
+	AppAuthToken        string                   `json:"-"`                     // 可选：应用授权（https://docs.open.alipay.com/20160728150111277227/intro）
+	ReturnURL           string                   `json:"-"`                     // 可选：HTTP/HTTPS开头字符串
+	NotifyURL           string                   `json:"-"`                     // 可选：支付宝服务器主动通知商户服务器里指定的页面http/https路径。
+	TimeoutExpress      string                   `json:"timeout_express"`       // 可选：该笔订单允许的最晚付款时间，逾期将关闭交易。取值范围：1m～15d。m-分钟，h-小时，d-天，1c-当天（1c-当天的情况下，无论交易何时创建，都在0点关闭）。 该参数数值不接受小数点， 如 1.5h，可转换为 90m。
+	Body                string                   `json:"body"`                  // 可选：对一笔交易的具体描述信息。如果是多种商品，请将商品描述字符串累加传给body
+	TimeExpire          string                   `json:"time_expire"`           // 可选：绝对超时时间，格式为yyyy-MM-dd HH:mm。
+	GoodsType           string                   `json:"goods_type"`            // 可选：商品主类型 :0-虚拟类商品,1-实物类商品
+	PromoParams         string                   `json:"promo_params"`          // 可选：优惠参数 （仅与支付宝协商后可用）
+	PassbackParams      string                   `json:"passback_params"`       // 可选：公用回传参数，如果请求时传递了该参数，则返回给商户时会回传该参数。支付宝只会在同步返回（包括跳转回商户网站）和异步通知时将该参数原样返回。本参数必须进行UrlEncode之后才可以发送给支付宝。
+	ExtendParams        *TradeAppPayExtendParams `json:"extend_params"`         // 可选：业务扩展参数
+	EnablePayChannels   string                   `json:"enable_pay_channels"`   // 可选：可用渠道，用户只能在指定渠道范围内支付 当有多个渠道时用“,”分隔 ，与disable_pay_channels互斥
+	StoreID             string                   `json:"store_id"`              // 可选：商户门店编号
+	DisablePayChannels  string                   `json:"disable_pay_channels"`  // 可选：禁用渠道，用户不可用指定渠道支付 当有多个渠道时用“,”分隔 ，与enable_pay_channels互斥
+	BusinessParams      string                   `json:"business_params"`       // 可选：商户传入业务信息，具体值要和支付宝约定，应用于安全，营销等参数直传场景，格式为json格式
+	GoodsDetail         interface{}              `json:"goods_detail"`          // 可选，暂时用不到没有定义，需要时添加定义然后赋值即可
+	ExtUserInfo         interface{}              `json:"ext_user_info"`         // 可选，暂时用不到没有定义，需要时添加定义然后赋值即可
+	AgreementSignParams interface{}              `json:"agreement_sign_params"` // 可选，暂时用不到没有定义，需要时添加定义然后赋值即可
+}
+
+func (t *TradePagePayRequest) Method() string {
+	return "alipay.trade.page.pay"
+}
+
+func (t *TradePagePayRequest) Params() map[string]string {
+	var m = make(map[string]string)
+	m["notify_url"] = t.NotifyURL
+	m["return_url"] = t.ReturnURL
+	return m
+}
+
+func (t *TradePagePayRequest) BizContent() string {
+	return marshal(t)
+}
+
+type TradePagePayResponse struct {
 	TargetURL string `json:"target_url"`
 }
 

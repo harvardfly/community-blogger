@@ -1,4 +1,4 @@
-package ginalipay
+package alipay
 
 import (
 	"context"
@@ -12,9 +12,9 @@ import (
 var (
 	isSandBox = true
 	// sandbox
-	appID     = "2016101300676525"
+	appID     = "2016092300580717"
 	publicKey = []byte(`-----BEGIN PUBLIC KEY-----
-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwa9Gv/3ReQrYHOKGnSRJXFYEClDP7y1a6yuP1aytRsKk54+umyVt164YfqSQJUofCXo5Stx/QlmrprCy6Qalpx1lMznf5k8NIVprqh2VOOhm6uDVgZvI9BN39UQ9XPUhb3iHcYKwD0rNPYUDwsLmFEH7/8aLU06eumKZiM0TYeFQoaAdo4xjejrYc1iQNbrgAMmSkDGWz6v2gfv5L/bGXxG5gWLcUtnuR1P+CcNFvgjDIqNUK8/XNuaxYw+Rv8kbC9ajqixMsMwbK8AYrhd3F9g4lROqMy/6aN7MZm/e7/QlyGne87rRI0kk60wmtFxEaO874RSMgyRyjMTXZEK4twIDAQAB
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA4efPzSQ/KoBDVOpWJh8MUOzEoNVTSTXyvg2VPtT4xOPo9v/fvT22QLdKMOktuAx3HWroaDLYPqg641mA6ZrghR+EO/7eWxgH0ZfYoo8/ryXmp/k2sEv2l2bd91q++RdqBMDHp3tjHHVz94Dy6KRVkrNZbZMAImkh7m6EbhLlYWOGVQTcFq03PNC9eMolIPvhIk9bphlJUiXLwIjwBshTw7eJ0v/zNtDR42Owf6MbxBkiWBlWkXDlvgoow9i7tsv1UHaB0cO2kvJrKGh0xHTdGQ3GmJXqG+iLcnsU1Zvw75q8qTBQ84xpYw/2VQQw4Lo9CaZppFPOo9T1kbO1sxYKfwIDAQAB
 -----END PUBLIC KEY-----`)
 
 	privateKey = []byte(`-----BEGIN RSA PRIVATE KEY-----
@@ -63,7 +63,7 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func TestAliPay_TradeAppPay(t *testing.T) {
+func TestTradeAppPay(t *testing.T) {
 	ret, err := client.TradeAppPay(context.Background(), &TradeAppPayRequest{
 		TotalAmount: "1",
 		Subject:     "测试商品",
@@ -74,13 +74,13 @@ func TestAliPay_TradeAppPay(t *testing.T) {
 }
 
 // done
-func TestAliPay_TradeWapPay(t *testing.T) {
+func TestTradeWapPay(t *testing.T) {
 	ret, err := client.TradeWapPay(context.Background(), &TradeWapPayRequest{
 		TotalAmount:    "100",
 		Subject:        "测试商品",
 		OutTradeNo:     "00906",
 		ProductCode:    "QUICK_WAP_WAY",
-		QuitURL:        "http://www.tsgbqx.cn",
+		QuitURL:        "http://www.baidu.com",
 		NotifyURL:      "",
 		TimeoutExpress: "30m",
 		GoodsType:      "1",
@@ -91,7 +91,23 @@ func TestAliPay_TradeWapPay(t *testing.T) {
 }
 
 // done
-func TestAliPay_TradeQuery(t *testing.T) {
+func TestTradePagePay(t *testing.T) {
+	ret, err := client.TradePagePay(context.Background(), &TradePagePayRequest{
+		TotalAmount:    "100",
+		Subject:        "测试商品",
+		OutTradeNo:     "00099",
+		ProductCode:    "FAST_INSTANT_TRADE_PAY",
+		NotifyURL:      "",
+		TimeoutExpress: "30m",
+		GoodsType:      "1",
+		TimeExpire:     time.Now().Add(time.Minute * 30).Format("2006-01-02 15:04"),
+	})
+	assert.Equal(t, nil, err)
+	t.Logf("PagePayTargetURL:%s", ret.TargetURL)
+}
+
+// done
+func TestTradeQuery(t *testing.T) {
 	ret, err := client.TradeQuery(context.Background(), &TradeQueryRequest{
 		OutTradeNo: "005",
 	})
@@ -99,7 +115,7 @@ func TestAliPay_TradeQuery(t *testing.T) {
 	t.Logf("%#v", *ret)
 }
 
-func TestAliPay_TradeClose(t *testing.T) {
+func TestTradeClose(t *testing.T) {
 	ret, err := client.TradeClose(context.Background(), &TradeCloseRequest{
 		OutTradeNo: "004",
 	})
@@ -108,7 +124,7 @@ func TestAliPay_TradeClose(t *testing.T) {
 }
 
 // done
-func TestAliPay_TradeCancel(t *testing.T) {
+func TestTradeCancel(t *testing.T) {
 	ret, err := client.TradeCancel(context.Background(), &TradeCancelRequest{
 		OutTradeNo: "004",
 	})
@@ -117,7 +133,7 @@ func TestAliPay_TradeCancel(t *testing.T) {
 }
 
 // done
-func TestAliPay_TradeRefund(t *testing.T) {
+func TestTradeRefund(t *testing.T) {
 	ret, err := client.TradeRefund(context.Background(), &TradeRefundRequest{
 		OutTradeNo:   "005",
 		RefundAmount: 50,
@@ -128,7 +144,7 @@ func TestAliPay_TradeRefund(t *testing.T) {
 }
 
 // done
-func TestAliPay_TradeRefundQuery(t *testing.T) {
+func TestTradeRefundQuery(t *testing.T) {
 	ret, err := client.TradeRefundQuery(context.Background(), &TradeRefundQueryRequest{
 		OutTradeNo:   "005",
 		OutRequestNo: "request_003_03",
@@ -138,7 +154,7 @@ func TestAliPay_TradeRefundQuery(t *testing.T) {
 }
 
 // done
-func TestAliPay_BillDownloadURLQuery(t *testing.T) {
+func TestBillDownloadURLQuery(t *testing.T) {
 	ret, err := client.BillDownloadURLQuery(context.Background(), &BillDownloadRequest{
 		BillType: "trade",
 		BillDate: "2019-10-21",
@@ -147,7 +163,7 @@ func TestAliPay_BillDownloadURLQuery(t *testing.T) {
 	t.Logf("%#v", *ret)
 }
 
-func TestAliPay_ParseJSONSource(t *testing.T) {
+func TestParseJSONSource(t *testing.T) {
 	body := `{"sign":"UpBhxKyuxGEMRethWKXj13Vj3rG7YJb+tC8YQdISwwerv7Hnr87O/hpSpEOMj30IrVfrUs4IMaaHHI+VaNM9WlmdqkJMXcqrVkh0VTzLykYWsfI08EbYMkbj0MyNFO27JjbALq7kknFzjj2p3lf6X+zo1nE6Wh678yFZ3esVUIkI7YxB0sQQvxkG/kMefwDhGwigtljXf6QEylzKGHDQy9hlCOUHFDSM5XFd1DJQuFqhttG/ujOkRTSJy6DaV/kjjxaA0iLhDoCqcGHBxTN9WQtYV3I+hIHhOLUtmLmQzHTypA7bOOgKGv6zL+3zObftEIPdfN/pii2D5k6vbtmSbg==","alipay_trade_query_response":{"code":"10000","msg":"Success","buyer_logon_id":"hfj***@sandbox.com","buyer_pay_amount":"0.00","buyer_user_id":"2088102179843724","buyer_user_type":"PRIVATE","invoice_amount":"0.00","out_trade_no":"003","point_amount":"0.00","receipt_amount":"0.00","send_pay_date":"2019-10-22 15:59:49","total_amount":"100.00","trade_no":"2019102222001443721000074028","trade_status":"TRADE_CLOSED"}}`
 	rootNodeName := "alipay_trade_query_response"
 	content, sign := parseJSONSource(body, rootNodeName)

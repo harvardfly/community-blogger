@@ -1,8 +1,8 @@
-package ginalipay
+package alipay
 
 const (
-	AliPaySandboxApiUrl    = "https://openapi.alipaydev.com/gateway.do"
-	AliPayProductionApiUrl = "https://openapi.alipay.com/gateway.do"
+	SandboxApiURL    = "https://openapi.alipaydev.com/gateway.do"
+	ProductionApiURL = "https://openapi.alipay.com/gateway.do"
 )
 
 const (
@@ -24,8 +24,9 @@ const (
 type PayType int
 
 const (
-	PayTypeApp PayType = iota // 手机支付
-	PayTypeWap                // 手机网站支付
+	PayTypeApp  PayType = iota // 手机支付
+	PayTypeWap                 // 手机网站支付
+	PayTypePage                // pc网站支付
 )
 
 // 交易状态说明(trade_status)
