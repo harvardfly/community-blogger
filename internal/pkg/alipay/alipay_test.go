@@ -2,7 +2,6 @@ package alipay
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -15,7 +14,7 @@ var (
 	// sandbox
 	appID     = "2016092300580717"
 	publicKey = []byte(`-----BEGIN PUBLIC KEY-----
-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAp3TKHLE439G6oVyjq4v0nnFmLoONphBwd6rulG1dTKc5qybDJykf/dPqJnULtPUs1oRlgmoBK0NCUB2OPuYpM2v2Cfvvm4zsXW9DuzYaItFB+Nd5KmZU7hMK6oNHOgCKiNW1pYILOwoJaKurRn/UbffVDzxeEiBoLLk5kpszbu53LngLYG7RQhGkjh6/cWuy3o4MdXuee66v1tDOEK2U/5lOx9r+Y4SY7b6pT8XW95/KFROze8Wn8mXbrJWfDZ6Z8Ee0ny5miKXthhdrE/KqNsHRBKTS/8aVdmAedLKw7lAoC28jZssKN0YsHHcWd9++jVPLmPK7XgQmpd73a1B0LQIDAQAB
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzk5cSAra2ibZwmg2JxCTLlc/or2oneas5OdEOhdPrUQL7p5ILZPjWLyQx3leDJGMvQqiDQXVtB8YD6LUk4lCzOJlI1VLgzcC9yVdr9YElyNTchYXgt9Ylal54yldvDNGgzseVHO+B+lkIDB0L6v9mV9C1dtfNeYcubYNgNfUju98lg4tnR1EhAHZbqixjamviHIW7OvDDCzgquUqk3AtG8WhIbmvRJmeqbnQtUWpnXzG3+yzpLXMBqNBZoGp4epBMy50r73iL46eqNm9XOkoGpt94zire+v+4leSTgL5tP88atiy5G98OUkYh098zHeCD88DbcuzYm8p8WJBROrodwIDAQAB
 -----END PUBLIC KEY-----`)
 
 	privateKey = []byte(`-----BEGIN RSA PRIVATE KEY-----
@@ -72,7 +71,7 @@ func TestTradePagePay(t *testing.T) {
 	ret, err := client.TradePagePay(context.Background(), &TradePagePayRequest{
 		TotalAmount:    100.23,
 		Subject:        "测试商品",
-		OutTradeNo:     "00099",
+		OutTradeNo:     "000100",
 		ProductCode:    "FAST_INSTANT_TRADE_PAY",
 		NotifyURL:      "",
 		TimeoutExpress: "30m",
@@ -83,34 +82,34 @@ func TestTradePagePay(t *testing.T) {
 	t.Logf("PagePayTargetURL:%s", ret.TargetURL)
 }
 
-// done
+// pass verify验签时公钥为：支付宝公钥  私钥：应用私钥
 func TestTradeQuery(t *testing.T) {
 	ret, err := client.TradeQuery(context.Background(), &TradeQueryRequest{
 		OutTradeNo: "00906",
 	})
-	fmt.Println("ret:", ret.TradeQueryResponse)
 	assert.Equal(t, nil, err)
 	t.Logf("%#v", *ret)
 }
 
+// pass 测试交易关闭
 func TestTradeClose(t *testing.T) {
 	ret, err := client.TradeClose(context.Background(), &TradeCloseRequest{
-		OutTradeNo: "004",
+		OutTradeNo: "00906",
 	})
 	assert.Equal(t, nil, err)
 	t.Logf("%#v", *ret)
 }
 
-// done
+// pass
 func TestTradeCancel(t *testing.T) {
 	ret, err := client.TradeCancel(context.Background(), &TradeCancelRequest{
-		OutTradeNo: "004",
+		OutTradeNo: "00906",
 	})
 	assert.Equal(t, nil, err)
 	t.Logf("%#v", *ret)
 }
 
-// done
+// pass
 func TestTradeRefund(t *testing.T) {
 	ret, err := client.TradeRefund(context.Background(), &TradeRefundRequest{
 		OutTradeNo:   "005",
@@ -121,7 +120,7 @@ func TestTradeRefund(t *testing.T) {
 	t.Logf("%#v", *ret)
 }
 
-// done
+// pass
 func TestTradeRefundQuery(t *testing.T) {
 	ret, err := client.TradeRefundQuery(context.Background(), &TradeRefundQueryRequest{
 		OutTradeNo:   "005",
@@ -131,25 +130,12 @@ func TestTradeRefundQuery(t *testing.T) {
 	t.Logf("%#v", *ret)
 }
 
-// done
+// pass
 func TestBillDownloadURLQuery(t *testing.T) {
 	ret, err := client.BillDownloadURLQuery(context.Background(), &BillDownloadRequest{
 		BillType: "trade",
-		BillDate: "2019-10-21",
+		BillDate: "2020-10-10",
 	})
 	assert.Equal(t, nil, err)
 	t.Logf("%#v", *ret)
-}
-
-func TestParseJSONSource(t *testing.T) {
-	body := `{"sign":"UpBhxKyuxGEMRethWKXj13Vj3rG7YJb+tC8YQdISwwerv7Hnr87O/hpSpEOMj30IrVfrUs4IMaaHHI+VaNM9WlmdqkJMXcqrVkh0VTzLykYWsfI08EbYMkbj0MyNFO27JjbALq7kknFzjj2p3lf6X+zo1nE6Wh678yFZ3esVUIkI7YxB0sQQvxkG/kMefwDhGwigtljXf6QEylzKGHDQy9hlCOUHFDSM5XFd1DJQuFqhttG/ujOkRTSJy6DaV/kjjxaA0iLhDoCqcGHBxTN9WQtYV3I+hIHhOLUtmLmQzHTypA7bOOgKGv6zL+3zObftEIPdfN/pii2D5k6vbtmSbg==","alipay_trade_query_response":{"code":"10000","msg":"Success","buyer_logon_id":"hfj***@sandbox.com","buyer_pay_amount":"0.00","buyer_user_id":"2088102179843724","buyer_user_type":"PRIVATE","invoice_amount":"0.00","out_trade_no":"003","point_amount":"0.00","receipt_amount":"0.00","send_pay_date":"2019-10-22 15:59:49","total_amount":"100.00","trade_no":"2019102222001443721000074028","trade_status":"TRADE_CLOSED"}}`
-	rootNodeName := "alipay_trade_query_response"
-	content, sign := parseJSONSource(body, rootNodeName)
-	assert.Equal(t, `{"code":"10000","msg":"Success","buyer_logon_id":"hfj***@sandbox.com","buyer_pay_amount":"0.00","buyer_user_id":"2088102179843724","buyer_user_type":"PRIVATE","invoice_amount":"0.00","out_trade_no":"003","point_amount":"0.00","receipt_amount":"0.00","send_pay_date":"2019-10-22 15:59:49","total_amount":"100.00","trade_no":"2019102222001443721000074028","trade_status":"TRADE_CLOSED"}`, content)
-	assert.Equal(t, "UpBhxKyuxGEMRethWKXj13Vj3rG7YJb+tC8YQdISwwerv7Hnr87O/hpSpEOMj30IrVfrUs4IMaaHHI+VaNM9WlmdqkJMXcqrVkh0VTzLykYWsfI08EbYMkbj0MyNFO27JjbALq7kknFzjj2p3lf6X+zo1nE6Wh678yFZ3esVUIkI7YxB0sQQvxkG/kMefwDhGwigtljXf6QEylzKGHDQy9hlCOUHFDSM5XFd1DJQuFqhttG/ujOkRTSJy6DaV/kjjxaA0iLhDoCqcGHBxTN9WQtYV3I+hIHhOLUtmLmQzHTypA7bOOgKGv6zL+3zObftEIPdfN/pii2D5k6vbtmSbg==", sign)
-
-	body = `{"alipay_trade_query_response":{"code":"10000","msg":"Success","buyer_logon_id":"hfj***@sandbox.com","buyer_pay_amount":"0.00","buyer_user_id":"2088102179843724","buyer_user_type":"PRIVATE","invoice_amount":"0.00","out_trade_no":"003","point_amount":"0.00","receipt_amount":"0.00","send_pay_date":"2019-10-22 15:59:49","total_amount":"100.00","trade_no":"2019102222001443721000074028","trade_status":"TRADE_CLOSED"},"sign":"UpBhxKyuxGEMRethWKXj13Vj3rG7YJb+tC8YQdISwwerv7Hnr87O/hpSpEOMj30IrVfrUs4IMaaHHI+VaNM9WlmdqkJMXcqrVkh0VTzLykYWsfI08EbYMkbj0MyNFO27JjbALq7kknFzjj2p3lf6X+zo1nE6Wh678yFZ3esVUIkI7YxB0sQQvxkG/kMefwDhGwigtljXf6QEylzKGHDQy9hlCOUHFDSM5XFd1DJQuFqhttG/ujOkRTSJy6DaV/kjjxaA0iLhDoCqcGHBxTN9WQtYV3I+hIHhOLUtmLmQzHTypA7bOOgKGv6zL+3zObftEIPdfN/pii2D5k6vbtmSbg=="}`
-	content, sign = parseJSONSource(body, rootNodeName)
-	assert.Equal(t, `{"code":"10000","msg":"Success","buyer_logon_id":"hfj***@sandbox.com","buyer_pay_amount":"0.00","buyer_user_id":"2088102179843724","buyer_user_type":"PRIVATE","invoice_amount":"0.00","out_trade_no":"003","point_amount":"0.00","receipt_amount":"0.00","send_pay_date":"2019-10-22 15:59:49","total_amount":"100.00","trade_no":"2019102222001443721000074028","trade_status":"TRADE_CLOSED"}`, content)
-	assert.Equal(t, "UpBhxKyuxGEMRethWKXj13Vj3rG7YJb+tC8YQdISwwerv7Hnr87O/hpSpEOMj30IrVfrUs4IMaaHHI+VaNM9WlmdqkJMXcqrVkh0VTzLykYWsfI08EbYMkbj0MyNFO27JjbALq7kknFzjj2p3lf6X+zo1nE6Wh678yFZ3esVUIkI7YxB0sQQvxkG/kMefwDhGwigtljXf6QEylzKGHDQy9hlCOUHFDSM5XFd1DJQuFqhttG/ujOkRTSJy6DaV/kjjxaA0iLhDoCqcGHBxTN9WQtYV3I+hIHhOLUtmLmQzHTypA7bOOgKGv6zL+3zObftEIPdfN/pii2D5k6vbtmSbg==", sign)
 }

@@ -93,7 +93,6 @@ func (a *AliPay) doRequestWithVerify(method string, param TradeParams, results i
 	if err != nil {
 		return err
 	}
-
 	if len(a.AliPayPublicKey) > 0 {
 		var rootNodeName = strings.Replace(param.Method(), ".", "_", -1) + ResponseSuffix
 		content, sign := parseJSONSource(string(body), rootNodeName)
@@ -114,7 +113,6 @@ func (a *AliPay) doRequest(method string, param TradeParams, results interface{}
 		}
 		buf = strings.NewReader(p.Encode())
 	}
-
 	req, err := http.NewRequest(method, a.apiDomain, buf)
 	if err != nil {
 		return nil, err
@@ -138,7 +136,6 @@ func (a *AliPay) doRequest(method string, param TradeParams, results interface{}
 			return
 		}
 	}
-
 	if t, ok := results.(OriginBodySetter); ok {
 		t.SetOriginBody(body)
 	}
@@ -270,7 +267,6 @@ func verifyResponseData(data []byte, signType, sign string, key []byte) (ok bool
 	if err != nil {
 		return false, err
 	}
-
 	if signType == SignTypeRsa {
 		err = VerifyPKCS1v15(data, signBytes, key, crypto.SHA1)
 	} else {
