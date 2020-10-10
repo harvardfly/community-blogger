@@ -2,10 +2,7 @@
 github.com/Shopify/sarama
 # github.com/beorn7/perks v1.0.0
 github.com/beorn7/perks/quantile
-# github.com/coreos/bbolt v1.3.2
-github.com/coreos/bbolt
 # github.com/coreos/etcd v3.3.25+incompatible
-github.com/coreos/etcd/auth
 github.com/coreos/etcd/auth/authpb
 github.com/coreos/etcd/clientv3/balancer
 github.com/coreos/etcd/clientv3/balancer/connectivity
@@ -14,13 +11,8 @@ github.com/coreos/etcd/clientv3/balancer/resolver/endpoint
 github.com/coreos/etcd/clientv3/credentials
 github.com/coreos/etcd/etcdserver/api/v3rpc/rpctypes
 github.com/coreos/etcd/etcdserver/etcdserverpb
-github.com/coreos/etcd/lease
-github.com/coreos/etcd/lease/leasepb
-github.com/coreos/etcd/mvcc/backend
 github.com/coreos/etcd/mvcc/mvccpb
-github.com/coreos/etcd/pkg/adt
 github.com/coreos/etcd/pkg/logutil
-github.com/coreos/etcd/pkg/schedule
 github.com/coreos/etcd/pkg/systemd
 github.com/coreos/etcd/pkg/types
 github.com/coreos/etcd/raft
@@ -42,8 +34,6 @@ github.com/eapache/go-resiliency/breaker
 github.com/eapache/go-xerial-snappy
 # github.com/eapache/queue v1.1.0
 github.com/eapache/queue
-# github.com/etcd-io/etcd v3.3.25+incompatible
-github.com/etcd-io/etcd/mvcc
 # github.com/fsnotify/fsnotify v1.4.7
 github.com/fsnotify/fsnotify
 # github.com/gin-contrib/sse v0.1.0
@@ -59,10 +49,14 @@ github.com/gin-gonic/gin/render
 # github.com/go-playground/locales v0.13.0
 github.com/go-playground/locales
 github.com/go-playground/locales/currency
+github.com/go-playground/locales/en
+github.com/go-playground/locales/zh
 # github.com/go-playground/universal-translator v0.17.0
 github.com/go-playground/universal-translator
 # github.com/go-playground/validator/v10 v10.2.0
 github.com/go-playground/validator/v10
+github.com/go-playground/validator/v10/translations/en
+github.com/go-playground/validator/v10/translations/zh
 # github.com/go-sql-driver/mysql v1.5.0
 github.com/go-sql-driver/mysql
 # github.com/gogo/protobuf v1.2.1
@@ -81,8 +75,6 @@ github.com/golang/snappy
 # github.com/gomodule/redigo v2.0.0+incompatible
 github.com/gomodule/redigo/internal
 github.com/gomodule/redigo/redis
-# github.com/google/btree v1.0.0
-github.com/google/btree
 # github.com/google/go-cmp v0.5.2
 github.com/google/go-cmp/cmp
 github.com/google/go-cmp/cmp/internal/diff
@@ -229,8 +221,6 @@ go.uber.org/zap/internal/color
 go.uber.org/zap/internal/exit
 go.uber.org/zap/zapcore
 # golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
-golang.org/x/crypto/bcrypt
-golang.org/x/crypto/blowfish
 golang.org/x/crypto/md4
 golang.org/x/crypto/pbkdf2
 # golang.org/x/net v0.0.0-20200707034311-ab3426394381

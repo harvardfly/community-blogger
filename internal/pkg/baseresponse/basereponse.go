@@ -8,9 +8,9 @@ import (
 	"gopkg.in/go-playground/validator.v8"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
 	"community-blogger/internal/pkg/baseerror"
 	"community-blogger/internal/pkg/exception"
+	"github.com/gin-gonic/gin"
 )
 
 // ParamError 通用参数验证方法
