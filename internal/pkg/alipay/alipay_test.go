@@ -2,6 +2,7 @@ package alipay
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -49,7 +50,7 @@ func TestTradeAppPay(t *testing.T) {
 	t.Logf("%#v", *ret)
 }
 
-// done
+// pass 支付成功跳转到www.baidu.com
 func TestTradeWapPay(t *testing.T) {
 	ret, err := client.TradeWapPay(context.Background(), &TradeWapPayRequest{
 		TotalAmount:    "100",
@@ -60,23 +61,23 @@ func TestTradeWapPay(t *testing.T) {
 		NotifyURL:      "",
 		TimeoutExpress: "30m",
 		GoodsType:      "1",
-		TimeExpire:     time.Now().Add(time.Minute * 30).Format("2006-01-02 15:04"),
+		TimeExpire:     time.Now().Add(time.Minute * 30).Format("2006-01-02 15:04:05"),
 	})
 	assert.Equal(t, nil, err)
 	t.Logf("WapPayTargetURL:%s", ret.TargetURL)
 }
 
-// done
+// pass 扫码支付成功  需设置回调地址
 func TestTradePagePay(t *testing.T) {
 	ret, err := client.TradePagePay(context.Background(), &TradePagePayRequest{
-		TotalAmount:    "100",
+		TotalAmount:    100.23,
 		Subject:        "测试商品",
 		OutTradeNo:     "00099",
 		ProductCode:    "FAST_INSTANT_TRADE_PAY",
 		NotifyURL:      "",
 		TimeoutExpress: "30m",
 		GoodsType:      "1",
-		TimeExpire:     time.Now().Add(time.Minute * 30).Format("2006-01-02 15:04"),
+		TimeExpire:     time.Now().Add(time.Minute * 30).Format("2006-01-02 15:04:05"),
 	})
 	assert.Equal(t, nil, err)
 	t.Logf("PagePayTargetURL:%s", ret.TargetURL)
@@ -87,6 +88,7 @@ func TestTradeQuery(t *testing.T) {
 	ret, err := client.TradeQuery(context.Background(), &TradeQueryRequest{
 		OutTradeNo: "00906",
 	})
+	fmt.Println("ret:", ret.TradeQueryResponse)
 	assert.Equal(t, nil, err)
 	t.Logf("%#v", *ret)
 }

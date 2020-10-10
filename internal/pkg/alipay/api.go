@@ -45,7 +45,7 @@ func (a *AliPay) Pay(ctx context.Context, args *PayRequest) (*PayResponse, error
 	}
 	timeoutExpress := fmt.Sprintf("%dm", tom)
 	// 绝对超时时间
-	timeExpire := args.TimeoutExpire.Format("2006-01-02 15:04")
+	timeExpire := args.TimeoutExpire.Format("2006-01-02 15:04:05")
 	subject := TruncateString(args.Subject, 256)
 	body := TruncateString(args.Body, 128)
 	totalAmount := fmt.Sprintf("%.2f", float64(args.TotalAmount)/100.0)
@@ -144,7 +144,6 @@ func (a *AliPay) TradePagePay(ctx context.Context, args *TradePagePayRequest) (*
 	if err != nil {
 		return nil, err
 	}
-
 	return &TradePagePayResponse{
 		TargetURL: a.apiDomain + "?" + p.Encode(),
 	}, nil

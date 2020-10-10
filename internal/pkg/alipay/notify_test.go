@@ -64,7 +64,7 @@ func TestGetTradeNotification(t *testing.T) {
 			NotifyURL:      "",
 			TimeoutExpress: "30m",
 			GoodsType:      "1",
-			TimeExpire:     time.Now().Add(time.Minute * 30).Format("2006-01-02 15:04"),
+			TimeExpire:     time.Now().Add(time.Minute * 30).Format("2006-01-02 15:04:05"),
 		})
 		if err != nil {
 			r.Header.Set("Content-Type", "application/json;charset=utf-8")
