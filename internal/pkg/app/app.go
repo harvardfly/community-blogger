@@ -1,15 +1,15 @@
 package app
 
 import (
+	"community-blogger/internal/pkg/transports/grpc"
 	"os"
 	"os/signal"
 	"syscall"
-	"community-blogger/internal/pkg/transports/grpc"
 
+	"community-blogger/internal/pkg/transports/http"
 	"github.com/google/wire"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
-	"community-blogger/internal/pkg/transports/http"
 )
 
 // Application app server

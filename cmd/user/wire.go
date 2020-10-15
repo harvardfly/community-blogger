@@ -3,7 +3,6 @@
 package main
 
 import (
-	"github.com/google/wire"
 	"community-blogger/internal/app/user"
 	"community-blogger/internal/app/user/controllers"
 	"community-blogger/internal/app/user/grpcclients"
@@ -15,6 +14,7 @@ import (
 	"community-blogger/internal/pkg/log"
 	"community-blogger/internal/pkg/transports/grpc"
 	"community-blogger/internal/pkg/transports/http"
+	"github.com/google/wire"
 )
 
 var providerSet = wire.NewSet(

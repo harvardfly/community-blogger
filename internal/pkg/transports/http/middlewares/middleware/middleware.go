@@ -86,7 +86,7 @@ func BucketLimit(ctx *gin.Context) {
 		c.Do("hset", key, "lastTime", lastTime)
 	}
 	if tokens >= 1 {
-		tokens -- // 请求进来了，令牌就减少1
+		tokens-- // 请求进来了，令牌就减少1
 		c.Do("hset", key, "tokens", tokens)
 		return
 	}

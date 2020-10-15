@@ -3,9 +3,6 @@
 package main
 
 import (
-	"community-blogger/internal/pkg/es"
-	"community-blogger/internal/pkg/kafka"
-	"github.com/google/wire"
 	"community-blogger/internal/app/article"
 	"community-blogger/internal/app/article/controllers"
 	"community-blogger/internal/app/article/repositories"
@@ -13,10 +10,13 @@ import (
 	"community-blogger/internal/pkg/app"
 	"community-blogger/internal/pkg/config"
 	"community-blogger/internal/pkg/database"
+	"community-blogger/internal/pkg/es"
 	"community-blogger/internal/pkg/jaeger"
+	"community-blogger/internal/pkg/kafka"
 	"community-blogger/internal/pkg/log"
 	"community-blogger/internal/pkg/redis"
 	"community-blogger/internal/pkg/transports/http"
+	"github.com/google/wire"
 )
 
 var providerSet = wire.NewSet(

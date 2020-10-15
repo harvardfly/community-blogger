@@ -5,12 +5,12 @@ token认证中间件
 */
 
 import (
-	"github.com/dgrijalva/jwt-go"
-	"github.com/gin-gonic/gin"
-	"net/http"
 	"community-blogger/internal/pkg/baseerror"
 	"community-blogger/internal/pkg/baseresponse"
 	"community-blogger/internal/pkg/utils/middlewareutil"
+	"github.com/dgrijalva/jwt-go"
+	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 var (

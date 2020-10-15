@@ -1,9 +1,9 @@
 package dbutil
 
 import (
+	"community-blogger/internal/pkg/utils/constutil"
 	"github.com/jinzhu/gorm"
 	"strconv"
-	"community-blogger/internal/pkg/utils/constutil"
 )
 
 // ScopeFunc 定义Scope方法

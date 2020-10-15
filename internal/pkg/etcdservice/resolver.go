@@ -8,9 +8,9 @@ import (
 
 	"go.etcd.io/etcd/clientv3"
 
+	"community-blogger/internal/pkg/utils/constutil"
 	"github.com/coreos/etcd/mvcc/mvccpb"
 	"google.golang.org/grpc/resolver"
-	"community-blogger/internal/pkg/utils/constutil"
 )
 
 var cli *clientv3.Client

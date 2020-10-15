@@ -6,7 +6,6 @@
 package main
 
 import (
-	"github.com/google/wire"
 	"community-blogger/internal/app/userrpc"
 	"community-blogger/internal/app/userrpc/grpcserver"
 	"community-blogger/internal/app/userrpc/repositories"
@@ -16,6 +15,7 @@ import (
 	"community-blogger/internal/pkg/database"
 	"community-blogger/internal/pkg/log"
 	"community-blogger/internal/pkg/transports/grpc"
+	"github.com/google/wire"
 )
 
 // Injectors from wire.go:

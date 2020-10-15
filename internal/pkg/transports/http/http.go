@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/google/wire"
 	"community-blogger/internal/pkg/utils/netutil"
+	"github.com/google/wire"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"

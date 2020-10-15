@@ -1,6 +1,8 @@
 package grpc
 
 import (
+	"community-blogger/internal/pkg/etcdservice"
+	"community-blogger/internal/pkg/utils/netutil"
 	"fmt"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
@@ -10,8 +12,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"community-blogger/internal/pkg/etcdservice"
-	"community-blogger/internal/pkg/utils/netutil"
 )
 
 // ServerOptions grpc server option
