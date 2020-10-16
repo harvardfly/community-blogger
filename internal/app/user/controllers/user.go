@@ -1,13 +1,13 @@
 package controllers
 
 import (
-	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
-	"net/http"
 	"community-blogger/internal/app/user/services"
 	"community-blogger/internal/pkg/baseresponse"
 	"community-blogger/internal/pkg/requests"
 	"community-blogger/internal/pkg/utils/httputil"
+	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
+	"net/http"
 )
 
 // UserController 定义user模块Controller

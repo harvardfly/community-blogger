@@ -1,12 +1,12 @@
 package userrpc
 
 import (
+	"community-blogger/internal/pkg/app"
+	"community-blogger/internal/pkg/transports/grpc"
 	"github.com/google/wire"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
-	"community-blogger/internal/pkg/app"
-	"community-blogger/internal/pkg/transports/grpc"
 )
 
 // Options 定义userRpc类配置选项

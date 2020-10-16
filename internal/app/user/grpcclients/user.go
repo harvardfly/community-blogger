@@ -1,6 +1,9 @@
 package grpcclients
 
 import (
+	userproto "community-blogger/api/protos/user"
+	"community-blogger/internal/pkg/etcdservice"
+	"community-blogger/internal/pkg/transports/grpc"
 	"fmt"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
@@ -8,9 +11,6 @@ import (
 	"google.golang.org/grpc/balancer/roundrobin"
 	"google.golang.org/grpc/resolver"
 	"log"
-	userproto "community-blogger/api/protos/user"
-	"community-blogger/internal/pkg/etcdservice"
-	"community-blogger/internal/pkg/transports/grpc"
 )
 
 // NewUserClient 初始化 user rpc client

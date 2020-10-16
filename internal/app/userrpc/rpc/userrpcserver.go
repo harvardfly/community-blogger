@@ -1,10 +1,10 @@
 package rpc
 
 import (
-	"github.com/google/wire"
-	grpc2 "google.golang.org/grpc"
 	userproto "community-blogger/api/protos/user"
 	"community-blogger/internal/pkg/transports/grpc"
+	"github.com/google/wire"
+	grpc2 "google.golang.org/grpc"
 )
 
 // CreateInitServersFn RPC服务入口

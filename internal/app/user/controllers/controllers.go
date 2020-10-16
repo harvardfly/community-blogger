@@ -1,10 +1,10 @@
 package controllers
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/google/wire"
 	"community-blogger/internal/pkg/transports/http"
 	"community-blogger/internal/pkg/transports/http/middlewares/auth"
+	"github.com/gin-gonic/gin"
+	"github.com/google/wire"
 )
 
 // CreateInitControllersFn  user controllers router

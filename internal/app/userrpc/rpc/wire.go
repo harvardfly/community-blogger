@@ -3,11 +3,11 @@
 package rpc
 
 import (
-	"github.com/google/wire"
 	"community-blogger/internal/app/userrpc/grpcserver"
+	"community-blogger/internal/app/userrpc/repositories"
 	"community-blogger/internal/pkg/config"
 	"community-blogger/internal/pkg/log"
-	"community-blogger/internal/app/userrpc/repositories"
+	"github.com/google/wire"
 )
 
 var testProviderSet = wire.NewSet(

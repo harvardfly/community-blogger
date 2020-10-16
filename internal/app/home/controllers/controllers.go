@@ -3,8 +3,12 @@ package controllers
 import (
 	"community-blogger/internal/pkg/transports/http"
 	"community-blogger/internal/pkg/transports/http/middlewares/auth"
+	"community-blogger/internal/pkg/transports/http/middlewares/csrf"
 	"community-blogger/internal/pkg/transports/http/middlewares/ginprometheus"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
+
 	"github.com/google/wire"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
@@ -15,6 +19,25 @@ func CreateInitControllersFn(ho *HomeController) http.InitControllers {
 		r.Use(auth.Next())
 		gp := ginprometheus.New(r)
 		r.Use(gp.Middleware())
+
+		// 添加csrf
+		store := cookie.NewStore([]byte("secret"))
+		r.Use(sessions.Sessions("mysession", store))
+		r.Use(csrf.Middleware(csrf.Options{
+			Secret: "secret123!@#",
+			ErrorFunc: func(c *gin.Context) {
+				c.String(400, "CSRF token mismatch")
+				c.Abort()
+			},
+		}))
+
+		// 获取csrf token
+		r.GET("/protected", func(c *gin.Context) {
+			c.JSON(200, gin.H{
+				"csrf_token": csrf.GetToken(c),
+			})
+		})
+
 		// metrics采样
 		r.GET("/metrics", gin.WrapH(promhttp.Handler()))
 		e := r.Group("api/v1")
