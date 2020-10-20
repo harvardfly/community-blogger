@@ -52,7 +52,7 @@ func NewOptions(v *viper.Viper, logger *zap.Logger) (*Options, error) {
 }
 
 // New 初始化Kafka连接信息
-func New(o *Options) (producer sarama.SyncProducer, err error) {
+func New(o *Options, logger *zap.Logger) (producer sarama.SyncProducer, err error) {
 	config := sarama.NewConfig()
 	//等待服务器所有副本都保存成功后的响应
 	config.Producer.RequiredAcks = sarama.WaitForAll
@@ -65,7 +65,8 @@ func New(o *Options) (producer sarama.SyncProducer, err error) {
 		//使用配置,新建一个异步生产者
 		asyncProducer, err = sarama.NewAsyncProducer([]string{o.Brokers}, config)
 		if err != nil {
-			panic("NewAsyncProducer init error")
+			logger.Error("NewAsyncProducer init error", zap.Error(err))
+			return
 		}
 	})
 
@@ -73,7 +74,8 @@ func New(o *Options) (producer sarama.SyncProducer, err error) {
 		//使用配置,新建一个同步生产者
 		syncProducer, err := sarama.NewSyncProducer([]string{o.Brokers}, config)
 		if err != nil {
-			panic("NewSyncProducer init error")
+			logger.Error("NewSyncProducer init error", zap.Error(err))
+			return
 		}
 		Client.Producer = syncProducer
 	})
@@ -162,7 +164,6 @@ func (cli *ClientType) Subscribe() {
 			Params["index"] = "article"
 			Params["id"] = strconv.Itoa(esData.ID)
 			Params["bodyJson"] = string(msg.Value)
-
 			_, err = es.Client.Insert(Params)
 			if err != nil {
 				cli.logger.Error("create es error", zap.Error(err))

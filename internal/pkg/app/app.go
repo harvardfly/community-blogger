@@ -1,6 +1,7 @@
 package app
 
 import (
+	"community-blogger/internal/pkg/transports/cron"
 	"community-blogger/internal/pkg/transports/grpc"
 	"os"
 	"os/signal"
@@ -18,6 +19,7 @@ type Application struct {
 	logger     *zap.Logger
 	httpServer *http.Server
 	grpcServer *grpc.Server
+	cronServer *cron.Server
 }
 
 // Option app option
@@ -37,6 +39,15 @@ func GrpcServerOptions(svr *grpc.Server) Option {
 	return func(app *Application) error {
 		svr.Application(app.name)
 		app.grpcServer = svr
+		return nil
+	}
+}
+
+// CronServerOptions
+func CronServerOptions(svr *cron.Server) Option {
+	return func(app *Application) error {
+		svr.Application(app.name)
+		app.cronServer = svr
 		return nil
 	}
 }
@@ -68,6 +79,12 @@ func (a *Application) Start() error {
 	if a.grpcServer != nil {
 		if err := a.grpcServer.Start(); err != nil {
 			return errors.Wrap(err, "grpc server start error")
+		}
+	}
+
+	if a.cronServer != nil {
+		if err := a.cronServer.Start(); err != nil {
+			return errors.Wrap(err, "cron server start error")
 		}
 	}
 

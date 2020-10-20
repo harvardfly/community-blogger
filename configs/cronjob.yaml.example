@@ -1,0 +1,28 @@
+app:
+  name: cronjob
+cron:
+  enableAsync: true
+  enableTryCatch: true
+  projects:
+    sync.es.total.per.5s:  "*/5 * * * * *"
+redis:
+  url: 127.0.0.1:6379
+  maxIdle: 20
+  maxActive: 256
+  idleTimeout: 15
+  timeout: 30
+  network: tcp
+  password: ""
+log:
+  filename: /tmp/cron.log
+  maxSize: 500
+  maxBackups: 3
+  maxAge: 3
+  level: "debug"
+  stdout: true
+es:
+  url: http://127.0.0.1:9200
+  healthCheck: 5
+  sniff: true
+  gzip: true
+  timeout: 5s

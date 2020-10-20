@@ -18,6 +18,7 @@ import (
 	"community-blogger/internal/pkg/kafka"
 	"community-blogger/internal/pkg/log"
 	"community-blogger/internal/pkg/redis"
+	"community-blogger/internal/pkg/transports/cron"
 	"community-blogger/internal/pkg/transports/http"
 	"github.com/google/wire"
 )
@@ -73,19 +74,13 @@ func CreateApp(cf string) (*app.Application, error) {
 	if err != nil {
 		return nil, err
 	}
-	syncProducer, err := kafka.New(kafkaOptions)
+	syncProducer, err := kafka.New(kafkaOptions, logger)
 	if err != nil {
 		return nil, err
 	}
 	articleRepository := repositories.NewMysqlArticleRepository(logger, databaseDatabase, syncProducer)
-	esOptions, err := es.NewOptions(viper, logger)
-	if err != nil {
-		return nil, err
-	}
-	client, err := es.New(esOptions, logger)
-	if err != nil {
-		return nil, err
-	}
+	esOptions := es.NewOptions(viper, logger)
+	client := es.New(esOptions, logger)
 	articleService := services.NewArticleService(logger, viper, pool, tracer, articleRepository, client)
 	articleController := controllers.NewArticleController(logger, articleService)
 	initControllers := controllers.CreateInitControllersFn(articleController)
@@ -103,4 +98,4 @@ func CreateApp(cf string) (*app.Application, error) {
 
 // wire.go:
 
-var providerSet = wire.NewSet(log.ProviderSet, config.ProviderSet, database.ProviderSet, redis.ProviderSet, jaeger.ProviderSet, es.ProviderSet, kafka.ProviderSet, repositories.ProviderSet, services.ProviderSet, http.ProviderSet, article.ProviderSet, controllers.ProviderSet)
+var providerSet = wire.NewSet(log.ProviderSet, config.ProviderSet, database.ProviderSet, redis.ProviderSet, jaeger.ProviderSet, es.ProviderSet, kafka.ProviderSet, repositories.ProviderSet, services.ProviderSet, http.ProviderSet, cron.ProviderSet, article.ProviderSet, controllers.ProviderSet)

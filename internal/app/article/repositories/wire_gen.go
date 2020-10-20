@@ -43,7 +43,7 @@ func CreateArticleRepository(f string) (ArticleRepository, error) {
 	if err != nil {
 		return nil, err
 	}
-	syncProducer, err := kafka.New(kafkaOptions)
+	syncProducer, err := kafka.New(kafkaOptions, logger)
 	if err != nil {
 		return nil, err
 	}

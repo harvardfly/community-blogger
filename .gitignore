@@ -3,3 +3,4 @@ dist/
 home.yaml
 article.yaml
 user.yaml
+cronjob.yaml

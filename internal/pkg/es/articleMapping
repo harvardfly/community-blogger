@@ -27,6 +27,9 @@ PUT article
       "id": {
         "type": "integer"
       },
+      "count":{
+        "type":"integer"
+      },
       "summary": {
         "type": "text",
         "fields": {

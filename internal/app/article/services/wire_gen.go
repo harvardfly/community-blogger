@@ -47,14 +47,8 @@ func CreateArticleService(cf string, rpo repositories.ArticleRepository) (Articl
 	if err != nil {
 		return nil, err
 	}
-	esOptions, err := es.NewOptions(viper, logger)
-	if err != nil {
-		return nil, err
-	}
-	client, err := es.New(esOptions, logger)
-	if err != nil {
-		return nil, err
-	}
+	esOptions := es.NewOptions(viper, logger)
+	client := es.New(esOptions, logger)
 	articleService := NewArticleService(logger, viper, pool, tracer, rpo, client)
 	return articleService, nil
 }

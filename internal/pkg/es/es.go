@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/google/wire"
 	"github.com/olivere/elastic/v7"
-	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 	"log"
@@ -57,22 +56,23 @@ type Value struct {
 }
 
 // NewOptions for ES
-func NewOptions(v *viper.Viper, logger *zap.Logger) (*Options, error) {
+func NewOptions(v *viper.Viper, logger *zap.Logger) *Options {
 	var (
 		err error
 		o   = new(Options)
 	)
 	if err = v.UnmarshalKey("es", o); err != nil {
-		return nil, errors.Wrap(err, "unmarshal es option error")
+		logger.Error("unmarshal es option error", zap.Error(err))
+		return nil
 	}
 
 	logger.Info("load es options success", zap.Any("es options", o))
-	return o, err
+	return o
 }
 
 // New 初始化ES连接信息
-func New(o *Options, logger *zap.Logger) (esConn *elastic.Client, err error) {
-	esConn, err = elastic.NewClient(
+func New(o *Options, logger *zap.Logger) (esConn *elastic.Client) {
+	esConn, err := elastic.NewClient(
 		elastic.SetURL(o.URL),
 		elastic.SetSniff(o.Sniff),
 		elastic.SetHealthcheckInterval(o.HealthCheck*time.Second),
@@ -106,7 +106,7 @@ func New(o *Options, logger *zap.Logger) (esConn *elastic.Client, err error) {
 	)
 	Client.esConn = esConn
 
-	return esConn, nil
+	return esConn
 }
 
 // Insert 创建
@@ -147,7 +147,7 @@ func (cli *ClientType) Delete(Params map[string]string) (string, error) {
 }
 
 // Update 更新
-func (cli *ClientType) Update(Params map[string]string, Doc map[string]interface{}) string {
+func (cli *ClientType) Update(Params map[string]string, Doc map[string]string) string {
 	var (
 		res *elastic.UpdateResponse
 		err error
@@ -163,7 +163,6 @@ func (cli *ClientType) Update(Params map[string]string, Doc map[string]interface
 		return ""
 	}
 	return res.Result
-
 }
 
 // GetByID 通过ID查找

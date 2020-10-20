@@ -29,3 +29,13 @@ jaeger:
   logSpans: true
   localAgentHostPort: "localhost:6831"
   service: "article"
+es:
+  url: http://127.0.0.1:9200
+  healthCheck: 5
+  sniff: true
+  gzip: true
+  timeout: 5s
+kafka:
+  brokers: 127.0.0.1:9092
+  tryTimes: 5
+  syncEsTopic: first_topic
