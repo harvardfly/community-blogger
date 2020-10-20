@@ -1,5 +1,5 @@
 # community-blogger
-gin+grpc+wire的脚手架，集成MySQL、Redis、ES、Kafka、分布式限流、服务注册发现、jaeger链路追踪、prometheus及支付宝支付API，可作为中型互联网公司golang架构实践
+gin+grpc+wire的脚手架，集成MySQL、Redis、ES、Kafka、分布式限流、服务注册发现、jaeger链路追踪、prometheus监控、cronlib定时调度任务及支付宝支付API，可作为中型互联网公司golang架构实践
 
 ## 技术选型
 ```$xslt
