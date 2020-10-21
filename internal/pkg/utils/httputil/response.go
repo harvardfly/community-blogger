@@ -105,3 +105,13 @@ func ReturnJSON(code int64, message string, data interface{}) interface{} {
 		Data:    data,
 	}
 }
+
+// GetReferDomain 获取RequestURI或Referer的域名
+func GetReferDomain(requestURI string) string {
+	tmpURI := requestURI
+	if find := strings.Contains(requestURI, "//"); find {
+		tmpURI = strings.Split(requestURI, "//")[1]
+	}
+	res := strings.Split(tmpURI, "/")[0]
+	return res
+}

@@ -7,6 +7,7 @@ token认证中间件
 import (
 	"community-blogger/internal/pkg/baseerror"
 	"community-blogger/internal/pkg/baseresponse"
+	"community-blogger/internal/pkg/utils/httputil"
 	"community-blogger/internal/pkg/utils/middlewareutil"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
@@ -24,10 +25,18 @@ var (
 	AccessTokenValidationErrorMalformedErr = baseerror.NewBaseError("AccessToken格式错误")
 )
 
-// Next 允许跨域
+// Next 允许跨域 Referer验证，预防csrf
 func Next() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		method := c.Request.Method
+		refer := c.Request.Header.Get("Referer")
+		reqURI := c.Request.RequestURI
+		// 验证Referer
+		if httputil.GetReferDomain(refer) != httputil.GetReferDomain(reqURI) {
+			c.JSON(http.StatusNotAcceptable, gin.H{"message": "Referer验证失败"})
+			c.Abort()
+			return
+		}
 		c.Header("Access-Control-Allow-Origin", "*")
 		c.Header("Access-Control-Allow-Headers", "Access-Control-Allow-Headers,Authorization,User-Agent, Keep-Alive, Content-Type, X-Requested-With,X-CSRF-Token,AccessToken,Token")
 		c.Header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, PATCH, OPTIONS")
