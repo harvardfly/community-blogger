@@ -6,6 +6,8 @@ import (
 	"community-blogger/internal/pkg/redis"
 	"community-blogger/internal/pkg/requests"
 	"community-blogger/internal/pkg/responses"
+	"community-blogger/internal/pkg/utils/constutil"
+	"community-blogger/internal/pkg/utils/timeutil"
 	"context"
 	"fmt"
 	redisPool "github.com/gomodule/redigo/redis"
@@ -30,6 +32,7 @@ type ArticleService interface {
 	ArticleEdit(req *requests.ArticleEdit) error
 	ArticleCategoryEdit(req *requests.ArticleCategoryEdit) error
 	ArticleDel(req *requests.ArticleInfo) error
+	GetUserArticleCountTopN(req *requests.ArticleUserTop) ([]responses.ArticleUserCount, error)
 }
 
 // DefaultArticleService 默认service所拥有的对象
@@ -80,6 +83,26 @@ func (s *DefaultArticleService) Article(ctx context.Context, req *requests.Artic
 	if err != nil {
 		s.logger.Error("发表文章失败", zap.Error(err))
 		return result, errors.New("发表文章失败")
+	}
+
+	todayStr := time.Now().Format("20060102")
+	keyToday := fmt.Sprintf(redis.KeyUserArticleCount, todayStr)
+	keyTotal := fmt.Sprintf(redis.KeyUserArticleCount, constutil.TotalRank)
+	keys := make([]string, 0, 2)
+	c, err := s.pool.Dial()
+	if err != nil || c == nil {
+		s.logger.Error("redis连接失败", zap.Error(err))
+		return result, errors.New("redis连接失败")
+	}
+
+	// 记录用户每天发贴数和总发贴数
+	keys = append(keys, keyToday, keyTotal)
+	for _, key := range keys {
+		_, err = c.Do("ZINCRBY", key, 1, req.UserName)
+		if err != nil {
+			s.logger.Error("redis操作incr失败", zap.Error(err))
+			return result, errors.New("redis操作incr失败")
+		}
 	}
 
 	result = responses.Article{
@@ -230,4 +253,61 @@ func (s *DefaultArticleService) ArticleDel(req *requests.ArticleInfo) error {
 		return gorm.ErrRecordNotFound
 	}
 	return s.Repository.ArticleDel(info.ID)
+}
+
+// GetUserArticleCountTopN 通过redis获取TOPN用户文章数排行榜
+func (s *DefaultArticleService) GetUserArticleCountTopN(req *requests.ArticleUserTop) ([]responses.ArticleUserCount, error) {
+	var (
+		result  []responses.ArticleUserCount
+		keyRank string
+	)
+	c, err := s.pool.Dial()
+	if err != nil || c == nil {
+		s.logger.Error("获取用户文章排行榜失败", zap.Error(err))
+		return result, errors.New("获取用户文章排行榜失败")
+	}
+	// 按周排行
+	if req.RankType == constutil.WeekRank {
+		keyRank = fmt.Sprintf(redis.KeyUserArticleCount, constutil.WeekRank)
+		err = redis.UnionStore(constutil.WeekDays, keyRank, c)
+	} else if req.RankType == constutil.MonthRank {
+		// 当月到今天的天数
+		keyRank = fmt.Sprintf(redis.KeyUserArticleCount, constutil.MonthRank)
+		err = redis.UnionStore(timeutil.GetNowMonthDays(), keyRank, c)
+	} else {
+		// 总排行
+		keyRank = fmt.Sprintf(redis.KeyUserArticleCount, constutil.TotalRank)
+	}
+	if err != nil {
+		s.logger.Error("合并一周/当月的用户发表文章数", zap.Error(err))
+		return result, errors.New("合并一周/当月的用户发表文章数")
+	}
+
+	// ZREVRANGEBYSCORE Key 0 n-1 从redis取出前n位的用户username及发贴数
+	hotUserArticles, err := redisPool.StringMap(c.Do("ZREVRANGEBYSCORE", keyRank, req.N-1, 0, "withscores"))
+	if err != nil {
+		s.logger.Error("ZREVRANGEBYSCORE", zap.Any("error", err))
+	}
+	for username, countStr := range hotUserArticles {
+		if err != nil {
+			s.logger.Warn("ArticleTopN:strconv.Atoi ID failed", zap.Any("error", err))
+			continue
+		}
+		count, err := strconv.Atoi(countStr)
+		if err != nil {
+			s.logger.Warn("ArticleTopN:strconv.Atoi count failed", zap.Any("error", err))
+			continue
+		}
+		result = append(result, responses.ArticleUserCount{
+			UserName: username,
+			Count:    count,
+		})
+	}
+
+	// 自定义排序 sort.Slice排序 按count排序
+	sort.Slice(result, func(i int, j int) bool {
+		return result[i].Count > result[j].Count
+	})
+
+	return result, nil
 }

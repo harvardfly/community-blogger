@@ -138,3 +138,10 @@ func MergeString(args ...string) string {
 	}
 	return buffer.String()
 }
+
+// GetNowMonthDays 获取当前月已过的天数(包含当日)
+func GetNowMonthDays() int {
+	now := time.Now()
+	day := now.Day()
+	return day
+}

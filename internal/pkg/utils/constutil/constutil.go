@@ -28,3 +28,14 @@ const (
 	// CreateArticle kafka topic
 	CreateArticle string = "first_topic"
 )
+
+const (
+	WeekRank  string = "week"
+	MonthRank string = "month"
+	TotalRank string = "all"
+)
+
+const (
+	WeekDays  int = 7
+	MonthDays int = 31
+)

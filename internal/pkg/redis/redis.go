@@ -1,6 +1,7 @@
 package redis
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/gomodule/redigo/redis"
@@ -65,6 +66,24 @@ func New(o *Options) (*redis.Pool, error) {
 	}
 	Client.RedisCon = pool
 	return pool, nil
+}
+
+// UnionStore 合并zset的key
+func UnionStore(rankDays int, keyRank string, c redis.Conn) error {
+	today := time.Now()
+	unionKeys := make([]interface{}, 0, rankDays+3)
+	unionKeys = append(unionKeys, keyRank, rankDays)
+	for i := 0; i < rankDays; i++ {
+		key := fmt.Sprintf(KeyUserArticleCount, today.AddDate(0, 0, -i).Format("20060102"))
+		unionKeys = append(unionKeys, key)
+	}
+
+	// 合并一周/当月的用户发表文章数
+	_, err := c.Do("ZUNIONSTORE", unionKeys...)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // ProviderSet inject redis settings

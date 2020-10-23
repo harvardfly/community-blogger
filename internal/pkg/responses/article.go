@@ -26,3 +26,9 @@ type ArticleRead struct {
 	Title string `json:"title"`
 	Count int    `json:"count"`
 }
+
+// ArticleUserCount 用户发表文章次数
+type ArticleUserCount struct {
+	UserName string `json:"username"`
+	Count    int    `json:"count"`
+}

@@ -1,2 +1,5 @@
 .idea/
 dist/
+README.md
+.git*
+LICENSE

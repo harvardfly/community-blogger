@@ -99,7 +99,7 @@ func (r *MysqlArticleRepository) Article(req *requests.Article) (models.Article,
 		CreatedAt: value.CreatedAt,
 		UpdatedAt: value.UpdatedAt,
 	}
-	// 同步数据到kafka
+	//同步数据到kafka
 	result := kafka.Client.SyncProduce(constutil.CreateArticle, esValue)
 	r.logger.Info("sync kafka to es", zap.Any("result", result))
 

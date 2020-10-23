@@ -10,6 +10,7 @@ type Article struct {
 	CategoryID int    `form:"category_id" json:"category_id"`
 	Summary    string `db:"summary"`
 	Title      string `db:"title"`
+	UserName   string `form:"username" json:"username" binding:""`
 }
 
 // ArticleInfo request 数据结构
@@ -44,4 +45,10 @@ type ArticleES struct {
 	Category  responses.Category `json:"category"`
 	CreatedAt time.Time          `json:"created_at"`
 	UpdatedAt time.Time          `json:"updated_at"`
+}
+
+// ArticleUserTop 用户发表文章数TON 结构
+type ArticleUserTop struct {
+	RankType string `form:"rank_type" json:"rank_type" binding:"required"`
+	N        int    `form:"n" json:"n" binding:"required"`
 }

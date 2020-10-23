@@ -35,6 +35,12 @@ func (pc *ArticleController) Article(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, httputil.Error(nil, "参数校验失败"))
 		return
 	}
+	username, exists := c.Get("username")
+	if !exists {
+		c.JSON(http.StatusForbidden, httputil.Error(nil, "用户信息获取失败"))
+		return
+	}
+	req.UserName = username.(string)
 	tracer := jaeger.Client.Tracer
 	opentracing.SetGlobalTracer(tracer)
 	span := tracer.StartSpan("Article")
@@ -156,4 +162,23 @@ func (pc *ArticleController) ArticleDel(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"code": 0, "msg": "success"})
+}
+
+// ArticleUserTopN 按照用户发表文章数排行返回前n用户的id和count
+func (pc *ArticleController) ArticleUserTopN(c *gin.Context) {
+	var req requests.ArticleUserTop
+	if err := c.ShouldBindQuery(&req); err != nil {
+		pc.logger.Error("参数错误", zap.Error(err))
+		c.JSON(http.StatusBadRequest, httputil.Error(nil, "参数校验失败"))
+		return
+	}
+	// 调用业务逻辑层 获取返回数据结果
+	res, err := pc.service.GetUserArticleCountTopN(&req)
+	if err != nil {
+		pc.logger.Error("获取用户文章TOPN失败", zap.Error(err))
+		c.JSON(http.StatusInternalServerError, httputil.Error(nil, "获取用户文章TOPN失败"))
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"code": 0, "msg": "success", "data": res})
+	return
 }

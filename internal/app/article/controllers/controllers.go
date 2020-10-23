@@ -20,6 +20,7 @@ func CreateInitControllersFn(pc *ArticleController) http.InitControllers {
 		e.PUT("/article", pc.ArticleEdit)                      // 更新文章  全量更新
 		e.PATCH("/article/category", pc.ArticleCategoryEdit)   // 修改文章类别  部分更新
 		e.DELETE("article", pc.ArticleDel)                     // 删除文章
+		e.GET("/article/user/rank", pc.ArticleUserTopN)        // 用户发表文章排行榜
 	}
 }
 
