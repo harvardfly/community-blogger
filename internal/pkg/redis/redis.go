@@ -11,6 +11,17 @@ import (
 	"go.uber.org/zap"
 )
 
+const (
+	// ScriptDeleteLock 释放redis并发锁 lua脚本 判断value为本次锁的value才释放
+	ScriptDeleteLock = `
+if redis.call("get", KEYS[1]) == ARGV[1] then
+    return redis.call("del",KEYS[1])
+else
+    return 0
+end
+`
+)
+
 // ClientType 定义redis client 结构体
 type ClientType struct {
 	RedisCon *redis.Pool
@@ -84,6 +95,34 @@ func UnionStore(rankDays int, keyRank string, c redis.Conn) error {
 		return err
 	}
 	return nil
+}
+
+// DistributedLock 并发锁
+func DistributedLock(key string, expire int, c redis.Conn, value time.Time) (bool, error) {
+	// 设置原子锁
+	exists, err := c.Do("set", key, value, "nx", "ex", expire)
+	if err != nil {
+		return false, errors.New("执行 set nx ex 失败")
+	}
+
+	// 锁已存在，已被占用
+	if exists != nil {
+		return false, nil
+	}
+
+	return true, nil
+}
+
+// ReleaseLock 释放锁 使用lua脚本执行
+func ReleaseLock(c redis.Conn, key string, value time.Time) (int, error) {
+	// keyCount表示lua脚本中key的个数
+	lua := redis.NewScript(1, ScriptDeleteLock)
+	// lua脚本中的参数为key和value
+	res, err := redis.Int(lua.Do(c, key, value))
+	if err != nil {
+		return 0, err
+	}
+	return res, nil
 }
 
 // ProviderSet inject redis settings
