@@ -100,6 +100,7 @@ func UnionStore(rankDays int, keyRank string, c redis.Conn) error {
 // DistributedLock 并发锁
 func DistributedLock(key string, expire int, c redis.Conn, value time.Time) (bool, error) {
 	// 设置原子锁
+	defer c.Close()
 	exists, err := c.Do("set", key, value, "nx", "ex", expire)
 	if err != nil {
 		return false, errors.New("执行 set nx ex 失败")
@@ -113,9 +114,17 @@ func DistributedLock(key string, expire int, c redis.Conn, value time.Time) (boo
 	return true, nil
 }
 
-// ReleaseLock 释放锁 使用lua脚本执行
-func ReleaseLock(c redis.Conn, key string, value time.Time) (int, error) {
+// ReleaseLock 释放锁
+func ReleaseLock(c redis.Conn, key string) (bool, error) {
+	defer c.Close()
+	v, err := redis.Bool(c.Do("DEL", key))
+	return v, err
+}
+
+// ReleaseLockWithLua 释放锁 使用lua脚本执行
+func ReleaseLockWithLua(c redis.Conn, key string, value time.Time) (int, error) {
 	// keyCount表示lua脚本中key的个数
+	defer c.Close()
 	lua := redis.NewScript(1, ScriptDeleteLock)
 	// lua脚本中的参数为key和value
 	res, err := redis.Int(lua.Do(c, key, value))
@@ -123,6 +132,44 @@ func ReleaseLock(c redis.Conn, key string, value time.Time) (int, error) {
 		return 0, err
 	}
 	return res, nil
+}
+
+func DoSomething(c redis.Conn, key string, expire int, value time.Time) {
+	// 获取锁
+	defer c.Close()
+	canUse, err := DistributedLock(key, expire, c, value)
+	if err != nil {
+		panic(err)
+	}
+	// 占用锁
+	if canUse {
+		fmt.Println("start do something ...")
+		// 释放锁
+		_, err := ReleaseLock(c, key)
+		if err != nil {
+			panic(err)
+		}
+	}
+	return
+}
+
+func DoSomethingWithLua(c redis.Conn, key string, expire int, value time.Time) {
+	// 获取锁
+	defer c.Close()
+	canUse, err := DistributedLock(key, expire, c, value)
+	if err != nil {
+		panic(err)
+	}
+	// 占用锁
+	if canUse {
+		fmt.Println("start do something ...")
+		// 释放锁 lua脚本执行原子性删除
+		_, err := ReleaseLockWithLua(c, key, value)
+		if err != nil {
+			panic(err)
+		}
+	}
+	return
 }
 
 // ProviderSet inject redis settings

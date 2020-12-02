@@ -3,6 +3,7 @@ package repositories
 import (
 	"community-blogger/internal/pkg/database"
 	"community-blogger/internal/pkg/models"
+
 	"github.com/jinzhu/gorm"
 	"go.uber.org/zap"
 )

@@ -6,11 +6,12 @@ import (
 	"community-blogger/internal/pkg/requests"
 	"community-blogger/internal/pkg/utils/httputil"
 	"context"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/log"
 	"go.uber.org/zap"
-	"net/http"
 )
 
 // ArticleController 定义文章模块Controller
@@ -43,7 +44,7 @@ func (pc *ArticleController) Article(c *gin.Context) {
 	req.UserName = username.(string)
 	tracer := jaeger.Client.Tracer
 	opentracing.SetGlobalTracer(tracer)
-	span := tracer.StartSpan("Article")
+	span := tracer.StartSpan("article.controller")
 	defer span.Finish()
 	ctx := context.Background()
 	ctx = opentracing.ContextWithSpan(ctx, span)

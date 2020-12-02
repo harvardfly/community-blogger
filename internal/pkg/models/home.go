@@ -2,18 +2,15 @@ package models
 
 import (
 	"community-blogger/internal/pkg/utils/constutil"
-	"time"
 )
 
 // Home 定义home数据结构
 type Home struct {
-	ID          int
+	BaseModel
 	URL         string
 	Img         string
 	Title       string
 	Description string
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
 }
 
 // TableName 获取home表名

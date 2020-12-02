@@ -6,9 +6,9 @@ import (
 
 // clientTarget user rpc client settings
 type clientTarget struct {
+	User     string
 	Caller   string
 	Callee   string
-	Schema   string
 	EtcdAddr string
 }
 

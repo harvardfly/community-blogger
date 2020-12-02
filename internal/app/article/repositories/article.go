@@ -7,16 +7,21 @@ import (
 	"community-blogger/internal/pkg/requests"
 	"community-blogger/internal/pkg/responses"
 	"community-blogger/internal/pkg/utils/constutil"
+	"context"
 	"errors"
+	"time"
+
+	"github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go/log"
+
 	"github.com/Shopify/sarama"
 	"github.com/jinzhu/gorm"
 	"go.uber.org/zap"
-	"time"
 )
 
 // ArticleRepository Repository 文章模块数据库操作
 type ArticleRepository interface {
-	Article(req *requests.Article) (models.Article, error)
+	Article(req *requests.Article, ctx context.Context) (models.Article, error)
 	GetArticle(id int) models.Article
 	ArticleReadCount(id int) error
 	GetTOPNArticles(ids []int) (value []models.Article, err error)
@@ -71,7 +76,7 @@ func (r *MysqlArticleRepository) GetCategory(id int) models.Category {
 }
 
 // Article 发布文章
-func (r *MysqlArticleRepository) Article(req *requests.Article) (models.Article, error) {
+func (r *MysqlArticleRepository) Article(req *requests.Article, ctx context.Context) (models.Article, error) {
 	var category models.Category
 	value := models.Article{
 		Title:      req.Title,
@@ -80,6 +85,8 @@ func (r *MysqlArticleRepository) Article(req *requests.Article) (models.Article,
 		CreatedAt:  time.Now(),
 		UpdatedAt:  time.Now(),
 	}
+	span, _ := opentracing.StartSpanFromContext(ctx, "article.mysql")
+	defer span.Finish()
 	err := r.db.Model(&models.Article{}).Create(&value).Error
 	if err != nil {
 		return value, err
@@ -102,6 +109,10 @@ func (r *MysqlArticleRepository) Article(req *requests.Article) (models.Article,
 	//同步数据到kafka
 	result := kafka.Client.SyncProduce(constutil.CreateArticle, esValue)
 	r.logger.Info("sync kafka to es", zap.Any("result", result))
+
+	span.LogFields(
+		log.String("event", "insert article repositories"),
+	)
 
 	return value, err
 }

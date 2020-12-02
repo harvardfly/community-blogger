@@ -3,15 +3,21 @@ package grpc
 import (
 	"community-blogger/internal/pkg/etcdservice"
 	"community-blogger/internal/pkg/utils/netutil"
+	"crypto/tls"
+	"crypto/x509"
 	"fmt"
-	"github.com/pkg/errors"
-	"github.com/spf13/viper"
-	"go.uber.org/zap"
-	"google.golang.org/grpc"
+	"io/ioutil"
+	"log"
 	"net"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/pkg/errors"
+	"github.com/spf13/viper"
+	"go.uber.org/zap"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
 // ServerOptions grpc server option
@@ -22,6 +28,12 @@ type ServerOptions struct {
 	ServiceName string
 	TTL         int64
 }
+
+var (
+	CAFile   = "/src/community-blogger/internal/pkg/transports/tls/server/ca.pem"
+	CertFile = "/src/community-blogger/internal/pkg/transports/tls/server//server.pem"
+	KeyFile  = "/src/community-blogger/internal/pkg/transports/tls/server/server.key"
+)
 
 // NewServerOptions grpc new option
 func NewServerOptions(v *viper.Viper, logger *zap.Logger) (*ServerOptions, error) {
@@ -56,7 +68,26 @@ type InitServers func(*grpc.Server)
 func NewServer(o *ServerOptions, logger *zap.Logger, init InitServers) (*Server, error) {
 	var gs *grpc.Server
 	logger = logger.With(zap.String("type", "grpc"))
-	gs = grpc.NewServer()
+	dir, _ := os.Getwd()
+	certPool := x509.NewCertPool()
+	ca, err := ioutil.ReadFile(dir + CAFile)
+	if err != nil {
+		log.Fatalf("ioutil.ReadFile err: %v", err)
+	}
+
+	if ok := certPool.AppendCertsFromPEM(ca); !ok {
+		log.Fatalf("certPool.AppendCertsFromPEM err")
+	}
+	cert, err := tls.LoadX509KeyPair(dir+CertFile, dir+KeyFile)
+	if err != nil {
+		log.Fatalf("tls.LoadX509KeyPair err: %v", err)
+	}
+	c := credentials.NewTLS(&tls.Config{
+		Certificates: []tls.Certificate{cert},
+		ClientAuth:   tls.RequireAndVerifyClientCert,
+		ClientCAs:    certPool,
+	})
+	gs = grpc.NewServer(grpc.Creds(c))
 	init(gs)
 
 	return &Server{
@@ -90,7 +121,6 @@ func (s *Server) Start() error {
 	go func() {
 		sig := <-ch
 		etcdservice.UnRegister(s.o.ServiceName, addr)
-
 		if i, ok := sig.(syscall.Signal); ok {
 			os.Exit(int(i))
 		} else {
@@ -103,6 +133,9 @@ func (s *Server) Start() error {
 		lis, err := net.Listen("tcp", addr)
 		if err != nil {
 			s.logger.Fatal("failed to listen: %v", zap.Error(err))
+		}
+		if err != nil {
+			log.Fatalf("Failed to generate credentials %v", err)
 		}
 
 		if err := s.server.Serve(lis); err != nil {

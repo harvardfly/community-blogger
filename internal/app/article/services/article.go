@@ -10,17 +10,19 @@ import (
 	"community-blogger/internal/pkg/utils/timeutil"
 	"context"
 	"fmt"
+	"sort"
+	"strconv"
+	"time"
+
+	"github.com/opentracing/opentracing-go/log"
+
 	redisPool "github.com/gomodule/redigo/redis"
 	"github.com/jinzhu/gorm"
 	"github.com/olivere/elastic/v7"
 	"github.com/opentracing/opentracing-go"
-	"github.com/opentracing/opentracing-go/log"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
-	"sort"
-	"strconv"
-	"time"
 )
 
 // ArticleService 定义article service
@@ -67,23 +69,24 @@ func NewArticleService(
 // Article 发表文章
 func (s *DefaultArticleService) Article(ctx context.Context, req *requests.Article) (responses.Article, error) {
 	var result responses.Article
+	span, _ := opentracing.StartSpanFromContext(ctx, "article.service")
+	ctx = opentracing.ContextWithSpan(ctx, span)
+	defer span.Finish()
 	cateInfo := s.Repository.GetCategory(req.CategoryID)
 	if cateInfo.ID == 0 {
 		s.logger.Error("categoryId 不存在", zap.Any("category_id", req.CategoryID))
 		return result, gorm.ErrRecordNotFound
 	}
-	span, _ := opentracing.StartSpanFromContext(ctx, "Article")
-	defer span.Finish()
-	span.LogFields(
-		log.String("event", "insert article service"),
-	)
 
-	res, err := s.Repository.Article(req)
+	res, err := s.Repository.Article(req, ctx)
 
 	if err != nil {
 		s.logger.Error("发表文章失败", zap.Error(err))
 		return result, errors.New("发表文章失败")
 	}
+	span.LogFields(
+		log.String("event", "insert article service"),
+	)
 
 	todayStr := time.Now().Format("20060102")
 	keyToday := fmt.Sprintf(redis.KeyUserArticleCount, todayStr)
@@ -266,6 +269,7 @@ func (s *DefaultArticleService) GetUserArticleCountTopN(req *requests.ArticleUse
 		s.logger.Error("获取用户文章排行榜失败", zap.Error(err))
 		return result, errors.New("获取用户文章排行榜失败")
 	}
+
 	// 按周排行
 	if req.RankType == constutil.WeekRank {
 		keyRank = fmt.Sprintf(redis.KeyUserArticleCount, constutil.WeekRank)

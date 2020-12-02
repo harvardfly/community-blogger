@@ -10,9 +10,10 @@ import (
 	"context"
 	"crypto/md5"
 	"fmt"
+	"time"
+
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
-	"time"
 )
 
 var (
@@ -64,8 +65,10 @@ func (s *DefaultUserService) FindByID(ctx context.Context, req *requests.User) (
 		Id: int32(req.ID),
 	}
 	data, err := s.userclient.FindById(ctx, &rpcReq)
+
 	if err != nil {
 		s.logger.Error("通过用户ID获取用户调用失败", zap.Error(err))
+		return nil, err
 	}
 	res := &responses.UserInfo{
 		ID:       int(data.Id),

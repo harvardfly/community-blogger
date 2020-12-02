@@ -2,7 +2,12 @@ package grpc
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
+	"io/ioutil"
 	"time"
+
+	"google.golang.org/grpc/credentials"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
@@ -15,6 +20,44 @@ type ClientOptions struct {
 	Wait            time.Duration
 	Tag             string
 	GrpcDialOptions []grpc.DialOption
+}
+
+func init() {
+	DefaultDialer.CAFile = "../internal/pkg/transports/tls/client/ca.pem"
+	DefaultDialer.CertFile = "../internal/pkg/transports/tls/client/client.pem"
+	DefaultDialer.KeyFile = "../internal/pkg/transports/tls/client/client.key"
+}
+
+// GrpcDialer .
+type Dialer struct {
+	CertFile string
+	KeyFile  string
+	CAFile   string
+}
+
+var DefaultDialer = Dialer{}
+
+// TransportCredentials 获取传输TSL证书
+func (d Dialer) TransportCredentials() (grpc.DialOption, error) {
+	cert, err := tls.LoadX509KeyPair(d.CertFile, d.KeyFile)
+	if err != nil {
+		return nil, err
+	}
+	ca, err := ioutil.ReadFile(d.CAFile)
+	if err != nil {
+		return nil, err
+	}
+
+	certPool := x509.NewCertPool()
+	if ok := certPool.AppendCertsFromPEM(ca); !ok {
+		return nil, errors.New("failed to append certs from pem")
+	}
+
+	tc := credentials.NewTLS(&tls.Config{
+		Certificates: []tls.Certificate{cert},
+		RootCAs:      certPool,
+	})
+	return grpc.WithTransportCredentials(tc), nil
 }
 
 // NewClientOptions new grpc client option
@@ -78,10 +121,12 @@ func (c *Client) Dial(service string, options ...ClientOptional) (*grpc.ClientCo
 		Tag:             c.o.Tag,
 		GrpcDialOptions: c.o.GrpcDialOptions,
 	}
+	// TLS安全验证
+	credential, _ := DefaultDialer.TransportCredentials()
+	o.GrpcDialOptions = append(o.GrpcDialOptions, credential)
 	for _, option := range options {
 		option(o)
 	}
-
 	conn, err := grpc.DialContext(ctx, service, o.GrpcDialOptions...)
 	if err != nil {
 		return nil, errors.Wrap(err, "grpc dial error")
