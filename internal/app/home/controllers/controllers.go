@@ -45,6 +45,7 @@ func CreateInitControllersFn(ho *HomeController) http.InitControllers {
 		e.GET("/home/list", ho.List)     // home信息列表
 		e.POST("/home", ho.Home)         // 添加home信息
 		e.POST("/upload", ho.UploadFile) // 上传文件
+		e.GET("/file/info", ho.FileInfo) // 获取文件信息
 	}
 }
 

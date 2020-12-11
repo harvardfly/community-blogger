@@ -111,7 +111,10 @@ func (pc *HomeController) UploadFile(c *gin.Context) {
 		return
 	}
 	// 上传文件到minio
-	path, err := pc.service.UploadFileMinio(uploadDir, filename)
+	//path, err := pc.service.UploadFileMinio(uploadDir, filename)
+
+	// 上传文件到qiniu
+	path, err := pc.service.UploadFileQiniu(filename, uploadDir+filename)
 
 	if err != nil {
 		pc.logger.Error("获取上传文件失败", zap.Error(err))
@@ -125,5 +128,26 @@ func (pc *HomeController) UploadFile(c *gin.Context) {
 	result := make(map[string]interface{})
 	result["code"] = http.StatusOK
 	result["data"] = list
+	c.JSON(http.StatusOK, result)
+}
+
+// FileInfo 获取文件信息
+func (pc *HomeController) FileInfo(c *gin.Context) {
+	var req requests.FileInfo
+	if err := c.ShouldBindQuery(&req); err != nil {
+		pc.logger.Error("参数错误", zap.Error(err))
+		c.JSON(http.StatusBadRequest, httputil.Error(nil, "参数校验失败"))
+		return
+	}
+	fileInfo, err := pc.service.QiniuFileInfo(req.FileName)
+	if err != nil {
+		pc.logger.Error("获取文件信息", zap.Error(err))
+		c.JSON(http.StatusInternalServerError, httputil.Error(nil, "获取文件信息失败"))
+		return
+	}
+	//定义返回的数据结构
+	result := make(map[string]interface{})
+	result["code"] = http.StatusOK
+	result["data"] = fileInfo
 	c.JSON(http.StatusOK, result)
 }

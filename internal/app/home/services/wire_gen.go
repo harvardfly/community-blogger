@@ -10,6 +10,7 @@ import (
 	"community-blogger/internal/pkg/config"
 	"community-blogger/internal/pkg/log"
 	"community-blogger/internal/pkg/storages/minio"
+	"community-blogger/internal/pkg/storages/qiniu"
 	"github.com/google/wire"
 )
 
@@ -36,10 +37,18 @@ func CreateHomeService(cf string, rpo repositories.HomeRepository) (HomeService,
 	if err != nil {
 		return nil, err
 	}
-	homeService := NewHomeService(logger, viper, rpo, client)
+	qiniuOptions, err := qiniu.NewOptions(viper, logger)
+	if err != nil {
+		return nil, err
+	}
+	formUploader, err := qiniu.New(qiniuOptions)
+	if err != nil {
+		return nil, err
+	}
+	homeService := NewHomeService(logger, viper, rpo, client, formUploader)
 	return homeService, nil
 }
 
 // wire.go:
 
-var testProviderSet = wire.NewSet(log.ProviderSet, config.ProviderSet, minio.ProviderSet, ProviderSet)
+var testProviderSet = wire.NewSet(log.ProviderSet, config.ProviderSet, minio.ProviderSet, qiniu.ProviderSet, ProviderSet)

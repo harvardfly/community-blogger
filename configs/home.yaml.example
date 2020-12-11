@@ -22,3 +22,11 @@ minio:
   useSSL: false
   BucketName: home
   Location: us-east-1
+qiniu:
+  accessKey: 七牛的accessKey
+  secretKey: 七牛的secretKey
+  bucket: home-zpf
+  zone: ZoneHuanan
+  useHTTPS: false
+  useCdnDomains: false
+  domain: 七牛上的外链域名
