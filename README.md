@@ -3,20 +3,21 @@ gin+grpc+wire的脚手架，集成MySQL、Redis、ES、Kafka、分布式限流�
 
 ## 技术选型
 ```$xslt
-1. web架构：gin+gorm+redis
-2. 数据库：mysql
-3. logger日志zap  日志切割lumberjack
-4. 依赖注入wire --> 解决大量配置文件初始化问题
-5. grpc(用户模块 调用rpc服务根据用户ID获取用户信息)
-6. JWT认证
-7. 基于redis实现分布式限流中间件（分别实现漏桶和令牌桶算法） 可用于防止用户恶意发布文章  --> 分布式限流 服务保护
-8. etcd作为服务注册发现  --> 服务注册发现  负载均衡
-9. opentracing+jaeger+ElasticSearch分布式链路追踪日志存储  --> 复杂调用链路问题排查
-10. prometheus 监控服务指标  分析gc等问题
-11. kafka作为消息中间件 解耦应用 --> kafka高吞吐率将极大改善大流量下服务器压力
-12. ES作为日志存储和搜索服务 --> 发挥ES倒排索引优势，可用于文章的搜索
-13. cron调度任务模块，支持任务注册、删除等  同步redis中文章浏览次数到ES中
-14. redis实现并发锁，lua脚本原子性释放锁
+web架构：gin+gorm+redis
+数据库：mysql
+logger日志zap  日志切割lumberjack
+依赖注入wire --> 解决大量配置文件初始化问题
+grpc(用户模块 调用rpc服务根据用户ID获取用户信息) TLS加密安全传输
+JWT认证
+基于redis实现分布式限流中间件（分别实现漏桶和令牌桶算法） 可用于防止用户恶意发布文章  --> 分布式限流 服务保护
+etcd作为服务注册发现  --> 服务注册发现  负载均衡
+opentracing+jaeger+ElasticSearch分布式链路追踪日志存储  --> 复杂调用链路问题排查
+prometheus 监控服务指标  分析gc等问题
+kafka作为消息中间件 解耦应用 --> kafka高吞吐率将极大改善大流量下服务器压力
+ES作为日志存储和搜索服务 --> 发挥ES倒排索引优势，可用于文章的搜索
+cron调度任务模块，支持任务注册、删除等  同步redis中文章浏览次数到ES中
+redis实现并发锁，lua脚本原子性释放锁
+文件上传存储模块：支持minio、七牛云存储、阿里云oss
 ```
 ## 功能模块 以博客系统作为脚手架示例
 ```$xslt

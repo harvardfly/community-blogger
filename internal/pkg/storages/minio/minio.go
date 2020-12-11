@@ -33,6 +33,7 @@ type Options struct {
 	Location        string
 }
 
+// NewOptions 加载minio配置
 func NewOptions(v *viper.Viper, logger *zap.Logger) (*Options, error) {
 	var (
 		err error
@@ -47,6 +48,7 @@ func NewOptions(v *viper.Viper, logger *zap.Logger) (*Options, error) {
 	return o, err
 }
 
+// New 初始化minio客户端
 func New(o *Options) (*minio.Client, error) {
 	minioClient, err := minio.New(
 		o.Endpoint,
@@ -85,9 +87,10 @@ func New(o *Options) (*minio.Client, error) {
 	return minioClient, nil
 }
 
-func UploadFile(uploadDir, tempfile string) (string, error) {
-	objectName := tempfile
-	filePath := uploadDir + tempfile
+// UploadFile 上传
+func UploadFile(uploadDir, tempFile string) (string, error) {
+	objectName := tempFile
+	filePath := uploadDir + tempFile
 	//提取文件后缀类型
 	var ext string
 	if pos := strings.LastIndexByte(objectName, '.'); pos != -1 {
@@ -128,4 +131,5 @@ func UploadFile(uploadDir, tempfile string) (string, error) {
 	return path, nil
 }
 
+// ProviderSet inject
 var ProviderSet = wire.NewSet(New, NewOptions)
