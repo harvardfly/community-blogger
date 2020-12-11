@@ -12,7 +12,6 @@ require (
 	github.com/dchest/uniuri v0.0.0-20200228104902-7aecb25e1fe5
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/dgryski/go-rendezvous v0.0.0-20200624174652-8d2f3be8b2d9 // indirect
-	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/etcd-io/etcd v3.3.25+incompatible // indirect
 	github.com/gin-contrib/sessions v0.0.3
 	github.com/gin-contrib/zap v0.0.1
@@ -32,8 +31,8 @@ require (
 	github.com/iGoogle-ink/gopay v1.5.12 // indirect
 	github.com/iGoogle-ink/gotil v1.0.1 // indirect
 	github.com/jinzhu/gorm v1.9.15
-	github.com/json-iterator/go v1.1.9 // indirect
 	github.com/mattn/go-isatty v0.0.12 // indirect
+	github.com/minio/minio-go/v6 v6.0.57
 	github.com/olivere/elastic/v7 v7.0.20
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pkg/errors v0.9.1

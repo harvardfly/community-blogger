@@ -6,10 +6,11 @@
 package services
 
 import (
-	"github.com/google/wire"
 	"community-blogger/internal/app/home/repositories"
 	"community-blogger/internal/pkg/config"
 	"community-blogger/internal/pkg/log"
+	"community-blogger/internal/pkg/storages/minio"
+	"github.com/google/wire"
 )
 
 // Injectors from wire.go:
@@ -27,10 +28,18 @@ func CreateHomeService(cf string, rpo repositories.HomeRepository) (HomeService,
 	if err != nil {
 		return nil, err
 	}
-	homeService := NewHomeService(logger, viper, rpo)
+	minioOptions, err := minio.NewOptions(viper, logger)
+	if err != nil {
+		return nil, err
+	}
+	client, err := minio.New(minioOptions)
+	if err != nil {
+		return nil, err
+	}
+	homeService := NewHomeService(logger, viper, rpo, client)
 	return homeService, nil
 }
 
 // wire.go:
 
-var testProviderSet = wire.NewSet(log.ProviderSet, config.ProviderSet, ProviderSet)
+var testProviderSet = wire.NewSet(log.ProviderSet, config.ProviderSet, minio.ProviderSet, ProviderSet)

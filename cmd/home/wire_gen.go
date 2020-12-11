@@ -14,6 +14,7 @@ import (
 	"community-blogger/internal/pkg/config"
 	"community-blogger/internal/pkg/database"
 	"community-blogger/internal/pkg/log"
+	"community-blogger/internal/pkg/storages/minio"
 	"community-blogger/internal/pkg/transports/http"
 	"github.com/google/wire"
 )
@@ -50,7 +51,15 @@ func CreateApp(cf string) (*app.Application, error) {
 		return nil, err
 	}
 	homeRepository := repositories.NewMysqlHomeRepository(logger, databaseDatabase)
-	homeService := services.NewHomeService(logger, viper, homeRepository)
+	minioOptions, err := minio.NewOptions(viper, logger)
+	if err != nil {
+		return nil, err
+	}
+	client, err := minio.New(minioOptions)
+	if err != nil {
+		return nil, err
+	}
+	homeService := services.NewHomeService(logger, viper, homeRepository, client)
 	homeController := controllers.NewHomeController(logger, homeService)
 	initControllers := controllers.CreateInitControllersFn(homeController)
 	engine := http.NewRouter(httpOptions, logger, initControllers)
@@ -67,4 +76,4 @@ func CreateApp(cf string) (*app.Application, error) {
 
 // wire.go:
 
-var providerSet = wire.NewSet(log.ProviderSet, config.ProviderSet, database.ProviderSet, repositories.ProviderSet, services.ProviderSet, http.ProviderSet, home.ProviderSet, controllers.ProviderSet)
+var providerSet = wire.NewSet(log.ProviderSet, config.ProviderSet, database.ProviderSet, repositories.ProviderSet, minio.ProviderSet, services.ProviderSet, http.ProviderSet, home.ProviderSet, controllers.ProviderSet)

@@ -11,7 +11,9 @@ import (
 	"community-blogger/internal/pkg/config"
 	"community-blogger/internal/pkg/database"
 	"community-blogger/internal/pkg/log"
+	"community-blogger/internal/pkg/storages/minio"
 	"community-blogger/internal/pkg/transports/http"
+
 	"github.com/google/wire"
 )
 
@@ -20,6 +22,7 @@ var providerSet = wire.NewSet(
 	config.ProviderSet,
 	database.ProviderSet,
 	repositories.ProviderSet,
+	minio.ProviderSet,
 	services.ProviderSet,
 	http.ProviderSet,
 	home.ProviderSet,

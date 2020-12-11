@@ -5,6 +5,7 @@ import (
 	"community-blogger/internal/pkg/transports/http/middlewares/auth"
 	"community-blogger/internal/pkg/transports/http/middlewares/csrf"
 	"community-blogger/internal/pkg/transports/http/middlewares/ginprometheus"
+
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
@@ -41,8 +42,9 @@ func CreateInitControllersFn(ho *HomeController) http.InitControllers {
 		// metrics采样
 		r.GET("/metrics", gin.WrapH(promhttp.Handler()))
 		e := r.Group("api/v1")
-		e.GET("/home/list", ho.List) // home信息列表
-		e.POST("/home", ho.Home)     // 添加home信息
+		e.GET("/home/list", ho.List)     // home信息列表
+		e.POST("/home", ho.Home)         // 添加home信息
+		e.POST("/upload", ho.UploadFile) // 上传文件
 	}
 }
 

@@ -82,8 +82,6 @@ func (r *MysqlArticleRepository) Article(req *requests.Article, ctx context.Cont
 		Title:      req.Title,
 		Summary:    req.Summary,
 		CategoryID: req.CategoryID,
-		CreatedAt:  time.Now(),
-		UpdatedAt:  time.Now(),
 	}
 	span, _ := opentracing.StartSpanFromContext(ctx, "article.mysql")
 	defer span.Finish()

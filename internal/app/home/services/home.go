@@ -1,25 +1,30 @@
 package services
 
 import (
-	"github.com/spf13/viper"
-	"go.uber.org/zap"
 	"community-blogger/internal/app/home/repositories"
 	"community-blogger/internal/pkg/requests"
 	"community-blogger/internal/pkg/responses"
+	minio2 "community-blogger/internal/pkg/storages/minio"
 	"community-blogger/internal/pkg/utils/constutil"
+
+	"github.com/minio/minio-go/v6"
+	"github.com/spf13/viper"
+	"go.uber.org/zap"
 )
 
 // HomeService home模块service定义
 type HomeService interface {
 	HomeList(req *requests.HomeList) (int, []responses.Home, error)
 	Home(req *requests.Home) error
+	UploadFileMinio(uploadDir, filename string) (string, error)
 }
 
 // DefaultHomeService home模块service默认对象
 type DefaultHomeService struct {
-	logger     *zap.Logger
-	v          *viper.Viper
-	Repository repositories.HomeRepository
+	logger      *zap.Logger
+	v           *viper.Viper
+	MinioClient *minio.Client
+	Repository  repositories.HomeRepository
 }
 
 // NewHomeService 初始化
@@ -27,11 +32,13 @@ func NewHomeService(
 	logger *zap.Logger,
 	v *viper.Viper,
 	repository repositories.HomeRepository,
+	minioClient *minio.Client,
 ) HomeService {
 	return &DefaultHomeService{
-		logger:     logger.With(zap.String("type", "DefaultHomeService")),
-		v:          v,
-		Repository: repository,
+		logger:      logger.With(zap.String("type", "DefaultHomeService")),
+		v:           v,
+		Repository:  repository,
+		MinioClient: minioClient,
 	}
 }
 
@@ -53,4 +60,13 @@ func (s *DefaultHomeService) HomeList(req *requests.HomeList) (int, []responses.
 // Home 新建home信息
 func (s *DefaultHomeService) Home(req *requests.Home) error {
 	return s.Repository.Home(req)
+}
+
+func (s *DefaultHomeService) UploadFileMinio(uploadDir, filename string) (string, error) {
+	path, err := minio2.UploadFile(uploadDir, filename)
+	if err != nil {
+		s.logger.Error("", zap.Error(err))
+		return "", err
+	}
+	return path, nil
 }

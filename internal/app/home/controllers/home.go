@@ -4,9 +4,16 @@ import (
 	"community-blogger/internal/app/home/services"
 	"community-blogger/internal/pkg/requests"
 	"community-blogger/internal/pkg/utils/httputil"
+	"io"
+	"log"
+	"net/http"
+	"os"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
-	"net/http"
 )
 
 // HomeController 定义HomeController结构
@@ -61,5 +68,62 @@ func (pc *HomeController) Home(c *gin.Context) {
 	//定义返回的数据结构
 	result := make(map[string]interface{})
 	result["code"] = http.StatusOK
+	c.JSON(http.StatusOK, result)
+}
+
+// UploadFile 上传文件 返回文件地址
+func (pc *HomeController) UploadFile(c *gin.Context) {
+	fileImg, header, err := c.Request.FormFile("file")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, httputil.Error(err, "参数错误"))
+		return
+	}
+	//重命名文件的名称
+	timestamp := time.Now().Unix()
+	tm := time.Unix(timestamp, 0)
+	ti := tm.Format("2006010203040501")
+	//提取文件后缀类型
+	var ext string
+	if pos := strings.LastIndexByte(header.Filename, '.'); pos != -1 {
+		ext = header.Filename[pos:]
+		if ext == "." {
+			ext = ""
+		}
+	}
+	filename := ti + "_" + strconv.FormatInt(time.Now().Unix(), 10) + ext
+	//创建文件
+	uploadDir := "static/uploadfile/home/"
+	err = os.MkdirAll(uploadDir, os.ModePerm)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, httputil.Error(err, "创建文件夹失败"))
+	}
+	out, err := os.Create(uploadDir + filename)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer out.Close()
+	_, err = io.Copy(out, fileImg)
+
+	if err != nil {
+		pc.logger.Error("上传失败", zap.Error(err))
+		c.JSON(http.StatusInternalServerError, httputil.Error(err, "上传失败"))
+		return
+	}
+	// 上传文件到minio
+	path, err := pc.service.UploadFileMinio(uploadDir, filename)
+
+	if err != nil {
+		pc.logger.Error("获取上传文件失败", zap.Error(err))
+		c.JSON(http.StatusInternalServerError, httputil.Error(err, "获取上传文件失败"))
+		return
+	}
+	os.Remove(uploadDir + filename)
+	//定义返回的数据结构
+	list := make(map[string]string)
+	list["resource_url"] = path
+	result := make(map[string]interface{})
+	result["code"] = http.StatusOK
+	result["data"] = list
 	c.JSON(http.StatusOK, result)
 }

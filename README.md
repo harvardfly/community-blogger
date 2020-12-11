@@ -103,7 +103,7 @@ herders: Authorization eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1OTc4MjYw
 ## CSRF TOKEN
 ```$xslt
 CSRF TOKEN 认证
-GET http://127.0.0.1:8001/api/v1/protected
+GET http://127.0.0.1:8001/protected
 {
     "csrf_token": "pZsqS3IJf5J-fejsO6ikdR6aXyw="
 }

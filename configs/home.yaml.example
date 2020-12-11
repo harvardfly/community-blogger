@@ -15,3 +15,10 @@ log:
   maxAge: 3
   level: "debug"
   stdout: true
+minio:
+  endpoint: 10.20.23.52:9000
+  accessKeyID:  minioadmin
+  secretAccessKey:  minioadmin
+  useSSL: false
+  BucketName: home
+  Location: us-east-1

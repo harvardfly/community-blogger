@@ -222,11 +222,9 @@ func (s *DefaultArticleService) ArticleEdit(req *requests.ArticleEdit) error {
 	}
 
 	article := &models.Article{
-		ID:         req.ID,
 		CategoryID: req.CategoryID,
 		Summary:    req.Summary,
 		Title:      req.Title,
-		UpdatedAt:  time.Now(),
 	}
 	return s.Repository.ArticleEdit(article)
 }
@@ -241,9 +239,7 @@ func (s *DefaultArticleService) ArticleCategoryEdit(req *requests.ArticleCategor
 	}
 
 	article := &models.Article{
-		ID:         req.ID,
 		CategoryID: req.CategoryID,
-		UpdatedAt:  time.Now(),
 	}
 	return s.Repository.ArticleCategoryEdit(article)
 }
