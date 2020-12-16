@@ -12,7 +12,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// ClientType 定义minio client 结构体
+// ClientType 定义qiniu client 结构体
 type ClientType struct {
 	FormUploader  *storage.FormUploader
 	UpToken       string
@@ -79,7 +79,6 @@ func getZone(o *Options) *storage.Region {
 
 // New 初始化qiniu客户端
 func New(o *Options) (*storage.FormUploader, error) {
-	fmt.Println(o.Bucket)
 	putPolicy := storage.PutPolicy{
 		Scope: o.Bucket,
 	}

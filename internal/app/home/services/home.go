@@ -5,8 +5,12 @@ import (
 	"community-blogger/internal/pkg/requests"
 	"community-blogger/internal/pkg/responses"
 	minio2 "community-blogger/internal/pkg/storages/minio"
+	oss2 "community-blogger/internal/pkg/storages/oss"
 	qiniu2 "community-blogger/internal/pkg/storages/qiniu"
 	"community-blogger/internal/pkg/utils/constutil"
+	"community-blogger/internal/pkg/utils/fileutil"
+
+	"github.com/aliyun/aliyun-oss-go-sdk/oss"
 
 	"github.com/qiniu/api.v7/v7/storage"
 
@@ -22,6 +26,11 @@ type HomeService interface {
 	UploadFileMinio(uploadDir, filename string) (string, error)
 	UploadFileQiniu(key, filename string) (string, error)
 	QiniuFileInfo(key string) (responses.FileInfo, error)
+	UploadFileOss(uploadDir, filename string) (responses.FileInfo, error)
+	DownloadFileOss(uploadDir, filename string) (string, error)
+	FileListOss() (string, error)
+	DeleteFileOss(filename string) (string, error)
+	DeleteFilesOss(objectNames []string) (string, error)
 }
 
 // DefaultHomeService home模块service默认对象
@@ -30,6 +39,7 @@ type DefaultHomeService struct {
 	v             *viper.Viper
 	MinioClient   *minio.Client
 	QiniuUploader *storage.FormUploader
+	OssClient     *oss.Client
 	Repository    repositories.HomeRepository
 }
 
@@ -40,6 +50,7 @@ func NewHomeService(
 	repository repositories.HomeRepository,
 	minioClient *minio.Client,
 	qiniuUploader *storage.FormUploader,
+	ossClient *oss.Client,
 ) HomeService {
 	return &DefaultHomeService{
 		logger:        logger.With(zap.String("type", "DefaultHomeService")),
@@ -47,6 +58,7 @@ func NewHomeService(
 		Repository:    repository,
 		MinioClient:   minioClient,
 		QiniuUploader: qiniuUploader,
+		OssClient:     ossClient,
 	}
 }
 
@@ -99,9 +111,58 @@ func (s *DefaultHomeService) QiniuFileInfo(key string) (responses.FileInfo, erro
 	}
 	return responses.FileInfo{
 		Hash:     fileInfo.Hash,
-		Fsize:    fileInfo.Fsize,
+		Fsize:    fileutil.FormatFileSize(fileInfo.Fsize),
 		PutTime:  fileInfo.PutTime,
 		MimeType: fileInfo.MimeType,
-		Type:     fileInfo.Type,
 	}, nil
+}
+
+// UploadFileOss 上传文件到oss
+func (s *DefaultHomeService) UploadFileOss(objectName, localFilePath string) (responses.FileInfo, error) {
+	res, err := oss2.UploadFile(objectName, localFilePath)
+	if err != nil {
+		s.logger.Error("", zap.Error(err))
+		return responses.FileInfo{}, err
+	}
+	return res, nil
+}
+
+// DownloadFileOss oss下载文件
+func (s *DefaultHomeService) DownloadFileOss(objectName, localFilePath string) (string, error) {
+	path, err := oss2.DownloadFile(objectName, localFilePath)
+	if err != nil {
+		s.logger.Error("", zap.Error(err))
+		return "", err
+	}
+	return path, nil
+}
+
+// FileListOss oss文件信息列表
+func (s *DefaultHomeService) FileListOss() (string, error) {
+	path, err := oss2.FileList()
+	if err != nil {
+		s.logger.Error("", zap.Error(err))
+		return "", err
+	}
+	return path, nil
+}
+
+// DeleteFileOss 删除oss文件
+func (s *DefaultHomeService) DeleteFileOss(objectName string) (string, error) {
+	res, err := oss2.DeleteFile(objectName)
+	if err != nil {
+		s.logger.Error("", zap.Error(err))
+		return "", err
+	}
+	return res, nil
+}
+
+// DeleteFilesOss 删除多个oss文件
+func (s *DefaultHomeService) DeleteFilesOss(objectNames []string) (string, error) {
+	res, err := oss2.DeleteFiles(objectNames)
+	if err != nil {
+		s.logger.Error("", zap.Error(err))
+		return "", err
+	}
+	return res, nil
 }

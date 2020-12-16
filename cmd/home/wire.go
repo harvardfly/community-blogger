@@ -12,6 +12,7 @@ import (
 	"community-blogger/internal/pkg/database"
 	"community-blogger/internal/pkg/log"
 	"community-blogger/internal/pkg/storages/minio"
+	"community-blogger/internal/pkg/storages/oss"
 	"community-blogger/internal/pkg/storages/qiniu"
 	"community-blogger/internal/pkg/transports/http"
 
@@ -25,6 +26,7 @@ var providerSet = wire.NewSet(
 	repositories.ProviderSet,
 	minio.ProviderSet,
 	qiniu.ProviderSet,
+	oss.ProviderSet,
 	services.ProviderSet,
 	http.ProviderSet,
 	home.ProviderSet,

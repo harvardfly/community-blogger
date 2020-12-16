@@ -114,7 +114,10 @@ func (pc *HomeController) UploadFile(c *gin.Context) {
 	//path, err := pc.service.UploadFileMinio(uploadDir, filename)
 
 	// 上传文件到qiniu
-	path, err := pc.service.UploadFileQiniu(filename, uploadDir+filename)
+	//path, err := pc.service.UploadFileQiniu(filename, uploadDir+filename)
+
+	// 上传文件到oss
+	info, err := pc.service.UploadFileOss(filename, uploadDir+filename)
 
 	if err != nil {
 		pc.logger.Error("获取上传文件失败", zap.Error(err))
@@ -123,11 +126,9 @@ func (pc *HomeController) UploadFile(c *gin.Context) {
 	}
 	os.Remove(uploadDir + filename)
 	//定义返回的数据结构
-	list := make(map[string]string)
-	list["resource_url"] = path
 	result := make(map[string]interface{})
 	result["code"] = http.StatusOK
-	result["data"] = list
+	result["data"] = info
 	c.JSON(http.StatusOK, result)
 }
 
@@ -140,6 +141,95 @@ func (pc *HomeController) FileInfo(c *gin.Context) {
 		return
 	}
 	fileInfo, err := pc.service.QiniuFileInfo(req.FileName)
+	if err != nil {
+		pc.logger.Error("获取文件信息", zap.Error(err))
+		c.JSON(http.StatusInternalServerError, httputil.Error(nil, "获取文件信息失败"))
+		return
+	}
+	//定义返回的数据结构
+	result := make(map[string]interface{})
+	result["code"] = http.StatusOK
+	result["data"] = fileInfo
+	c.JSON(http.StatusOK, result)
+}
+
+// DownloadFile 下载文件
+func (pc *HomeController) DownloadFile(c *gin.Context) {
+	var req requests.Download
+	if err := c.ShouldBindQuery(&req); err != nil {
+		pc.logger.Error("参数错误", zap.Error(err))
+		c.JSON(http.StatusBadRequest, httputil.Error(nil, "参数校验失败"))
+		return
+	}
+	fileName := strings.Split(req.FileURI, "/")[len(strings.Split(req.FileURI, "/"))-1]
+	fileInfo, err := pc.service.DownloadFileOss(fileName, req.FileURI)
+	if err != nil {
+		pc.logger.Error("获取文件信息", zap.Error(err))
+		c.JSON(http.StatusInternalServerError, httputil.Error(nil, "获取文件信息失败"))
+		return
+	}
+	//定义返回的数据结构
+	result := make(map[string]interface{})
+	result["code"] = http.StatusOK
+	result["data"] = fileInfo
+	c.JSON(http.StatusOK, result)
+}
+
+// FileList 文件列表
+func (pc *HomeController) FileList(c *gin.Context) {
+	var req requests.Download
+	if err := c.ShouldBindQuery(&req); err != nil {
+		pc.logger.Error("参数错误", zap.Error(err))
+		c.JSON(http.StatusBadRequest, httputil.Error(nil, "参数校验失败"))
+		return
+	}
+	fileList, err := pc.service.FileListOss()
+	if err != nil {
+		pc.logger.Error("获取文件信息", zap.Error(err))
+		c.JSON(http.StatusInternalServerError, httputil.Error(nil, "获取文件信息失败"))
+		return
+	}
+	//定义返回的数据结构
+	result := make(map[string]interface{})
+	result["code"] = http.StatusOK
+	result["data"] = fileList
+	c.JSON(http.StatusOK, result)
+}
+
+// DeleteFile 删除文件
+func (pc *HomeController) DeleteFile(c *gin.Context) {
+	var req requests.DeleteFile
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, httputil.Error(err, "参数校验失败"))
+		return
+	}
+	fileName := strings.Split(req.FileURI, "/")[len(strings.Split(req.FileURI, "/"))-1]
+	fileInfo, err := pc.service.DeleteFileOss(fileName)
+	if err != nil {
+		pc.logger.Error("获取文件信息", zap.Error(err))
+		c.JSON(http.StatusInternalServerError, httputil.Error(nil, "获取文件信息失败"))
+		return
+	}
+	//定义返回的数据结构
+	result := make(map[string]interface{})
+	result["code"] = http.StatusOK
+	result["data"] = fileInfo
+	c.JSON(http.StatusOK, result)
+}
+
+// DeleteFiles 删除多个文件
+func (pc *HomeController) DeleteFiles(c *gin.Context) {
+	var req requests.DeleteFiles
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, httputil.Error(err, "参数校验失败"))
+		return
+	}
+	fileNames := make([]string, 0, len(req.FileURI))
+	for _, fileURI := range req.FileURI {
+		fileName := strings.Split(fileURI, "/")[len(strings.Split(fileURI, "/"))-1]
+		fileNames = append(fileNames, fileName)
+	}
+	fileInfo, err := pc.service.DeleteFilesOss(fileNames)
 	if err != nil {
 		pc.logger.Error("获取文件信息", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, httputil.Error(nil, "获取文件信息失败"))

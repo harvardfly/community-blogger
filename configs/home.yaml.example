@@ -30,3 +30,9 @@ qiniu:
   useHTTPS: false
   useCdnDomains: false
   domain: 七牛上的外链域名
+oss:
+  accessKeyId: 阿里云OSS的accessKeyId
+  accessKeySecret: 阿里云OSS的accessKeySecret
+  bucket: home-zpf
+  endpoint: oss-cn-shanghai.aliyuncs.com
+  domain: home-zpf.oss-cn-shanghai.aliyuncs.com

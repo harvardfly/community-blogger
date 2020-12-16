@@ -7,6 +7,7 @@ import (
 	"community-blogger/internal/pkg/config"
 	"community-blogger/internal/pkg/log"
 	"community-blogger/internal/pkg/storages/minio"
+	"community-blogger/internal/pkg/storages/oss"
 	"community-blogger/internal/pkg/storages/qiniu"
 
 	"github.com/google/wire"
@@ -17,6 +18,7 @@ var testProviderSet = wire.NewSet(
 	config.ProviderSet,
 	minio.ProviderSet,
 	qiniu.ProviderSet,
+	oss.ProviderSet,
 	ProviderSet)
 
 func CreateHomeService(cf string,

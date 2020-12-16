@@ -11,6 +11,7 @@ import (
 	"community-blogger/internal/pkg/config"
 	"community-blogger/internal/pkg/log"
 	"community-blogger/internal/pkg/storages/minio"
+	"community-blogger/internal/pkg/storages/oss"
 	"community-blogger/internal/pkg/storages/qiniu"
 	"github.com/google/wire"
 )
@@ -46,11 +47,19 @@ func CreateHomeController(cf string, rpo repositories.HomeRepository) (*HomeCont
 	if err != nil {
 		return nil, err
 	}
-	homeService := services.NewHomeService(logger, viper, rpo, client, formUploader)
+	ossOptions, err := oss.NewOptions(viper, logger)
+	if err != nil {
+		return nil, err
+	}
+	ossClient, err := oss.New(ossOptions)
+	if err != nil {
+		return nil, err
+	}
+	homeService := services.NewHomeService(logger, viper, rpo, client, formUploader, ossClient)
 	homeController := NewHomeController(logger, homeService)
 	return homeController, nil
 }
 
 // wire.go:
 
-var testProviderSet = wire.NewSet(log.ProviderSet, config.ProviderSet, minio.ProviderSet, qiniu.ProviderSet, services.ProviderSet, ProviderSet)
+var testProviderSet = wire.NewSet(log.ProviderSet, config.ProviderSet, minio.ProviderSet, qiniu.ProviderSet, oss.ProviderSet, services.ProviderSet, ProviderSet)

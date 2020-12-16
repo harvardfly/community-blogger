@@ -11,6 +11,14 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
+// ClientType 定义日志 client 结构体
+type ClientType struct {
+	Logger *zap.Logger
+}
+
+// Client  logger连接类型
+var Client ClientType
+
 // Options log option
 type Options struct {
 	Filename   string
@@ -68,7 +76,7 @@ func New(o *Options) (*zap.Logger, error) {
 	core := zapcore.NewTee(cores...)
 	logger = zap.New(core, zap.AddCaller())
 	zap.ReplaceGlobals(logger)
-
+	Client.Logger = logger
 	return logger, err
 }
 

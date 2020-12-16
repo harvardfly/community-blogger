@@ -5,6 +5,7 @@ go 1.13
 require (
 	cloud.google.com/go/bigquery v1.4.0 // indirect
 	github.com/Shopify/sarama v1.27.0
+	github.com/aliyun/aliyun-oss-go-sdk v2.1.5+incompatible
 	github.com/benbjohnson/clock v1.0.3 // indirect
 	github.com/cespare/xxhash/v2 v2.1.1 // indirect
 	github.com/codahale/hdrhistogram v0.0.0-20161010025455-3a0bb77429bd // indirect
