@@ -4,15 +4,15 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"fmt"
 	"io/ioutil"
 	"time"
-
-	"google.golang.org/grpc/credentials"
 
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
 // ClientOptions grpc client option
@@ -123,14 +123,24 @@ func (c *Client) Dial(service string, options ...ClientOptional) (*grpc.ClientCo
 	}
 	// TLS安全验证
 	credential, _ := DefaultDialer.TransportCredentials()
-	o.GrpcDialOptions = append(o.GrpcDialOptions, credential)
+	if credential != nil {
+		o.GrpcDialOptions = append(o.GrpcDialOptions, credential)
+	} else {
+		// 默认不加安全验证
+		options = append(options, WithGrpcDialOptions(grpc.WithInsecure()))
+	}
 	for _, option := range options {
 		option(o)
 	}
+	fmt.Println(service)
+	fmt.Println("00000000000000000000")
+	fmt.Println(o.GrpcDialOptions)
 	conn, err := grpc.DialContext(ctx, service, o.GrpcDialOptions...)
 	if err != nil {
+		fmt.Println("11111111111111111111111111")
 		return nil, errors.Wrap(err, "grpc dial error")
 	}
-
+	fmt.Println("2222222222222222")
+	fmt.Println(conn)
 	return conn, nil
 }

@@ -30,8 +30,8 @@ type ServerOptions struct {
 }
 
 var (
-	CAFile   = "/src/community-blogger/internal/pkg/transports/tls/server/ca.pem"
-	CertFile = "/src/community-blogger/internal/pkg/transports/tls/server//server.pem"
+	CAFile   = "/src/community-blogger/internal/pkg/transports/tls/ca.pem"
+	CertFile = "/src/community-blogger/internal/pkg/transports/tls/server/server.pem"
 	KeyFile  = "/src/community-blogger/internal/pkg/transports/tls/server/server.key"
 )
 

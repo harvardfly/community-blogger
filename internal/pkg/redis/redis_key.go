@@ -9,4 +9,6 @@ const (
 	KeyBucketLimitArticleUser = "blog:article:bucket:limit:username:%s"
 	// KeyUserArticleCount 用户发表文章数key blog:user:article:count:20201020
 	KeyUserArticleCount = "blog:user:article:count:%s"
+	// KeyLeakyBucketArticleUser 漏牌桶算法限流
+	KeyLeakyBucketArticleUser = "blog:article:bucket:leaky:username:%s"
 )

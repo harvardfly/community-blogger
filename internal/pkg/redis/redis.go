@@ -20,6 +20,32 @@ else
     return 0
 end
 `
+	// lua脚本实现令牌桶算法限流
+	ScriptTokenLimit = `
+local rateLimit = redis.pcall('HMGET',KEYS[1],'lastTime','tokens')
+local lastTime = rateLimit[1]
+local tokens = tonumber(rateLimit[2])
+local capacity = tonumber(ARGV[1])
+local rate = tonumber(ARGV[2])
+local now = tonumber(ARGV[3])
+if tokens == nil then
+  tokens = capacity
+else
+  local deltaTokens = math.floor((now-lastTime)*rate)
+  tokens = tokens+deltaTokens
+  if tokens>capacity then
+    tokens = capacity
+  end
+end
+local result = false
+lastTime = now
+if(tokens>0) then
+  result = true
+  tokens = tokens-1
+end
+redis.call('HMSET',KEYS[1],'lastTime',lastTime,'tokens',tokens)
+return result
+`
 )
 
 // ClientType 定义redis client 结构体
@@ -170,6 +196,18 @@ func DoSomethingWithLua(c redis.Conn, key string, expire int, value time.Time) {
 		}
 	}
 	return
+}
+
+// LuaTokenBucket 通过lua脚本实现令牌桶算法限流
+func LuaTokenBucket(c redis.Conn, key string, capacity, rate, now int64) (bool, error) {
+	defer c.Close()
+	lua := redis.NewScript(1, ScriptTokenLimit)
+	// lua脚本中的参数为key和value
+	res, err := redis.Bool(lua.Do(c, key, capacity, rate, now))
+	if err != nil {
+		return false, err
+	}
+	return res, nil
 }
 
 // ProviderSet inject redis settings
